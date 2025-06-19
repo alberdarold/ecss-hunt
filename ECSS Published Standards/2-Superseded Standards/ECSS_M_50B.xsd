@@ -1,0 +1,562 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<!-- Designed by Thierry WARROT, CNES (thierry.warrot@cnes.fr) -->
+<xs:schema xmlns:ecss="http://www.ecss.nl/namespace/ECSS_M_50B" xmlns:xs="http://www.w3.org/2001/XMLSchema" targetNamespace="http://www.ecss.nl/namespace/ECSS_M_50B" elementFormDefault="qualified" attributeFormDefault="unqualified" version="2.4">
+	<!--Eléments globaux-->
+	<xs:element name="data_package">
+		<xs:complexType>
+			<xs:complexContent>
+				<xs:extension base="ecss:data_package">
+					<xs:attribute name="schemaVersion" type="xs:decimal" use="required"/>
+				</xs:extension>
+			</xs:complexContent>
+		</xs:complexType>
+		<xs:key name="companyIdList">
+			<xs:selector xpath="ecss:database/ecss:companies/ecss:company"/>
+			<xs:field xpath="@design_activity_code"/>
+		</xs:key>
+		<xs:keyref name="existingCompany" refer="ecss:companyIdList">
+			<xs:selector xpath=".//*"/>
+			<xs:field xpath="@companyID"/>
+		</xs:keyref>
+		<xs:keyref name="belongsToExistingCompany" refer="ecss:companyIdList">
+			<xs:selector xpath="ecss:database/ecss:persons/ecss:person"/>
+			<xs:field xpath="@companyID"/>
+		</xs:keyref>
+		<xs:key name="personIdList">
+			<xs:selector xpath="ecss:database/ecss:persons/ecss:person"/>
+			<xs:field xpath="@personID"/>
+		</xs:key>
+		<xs:keyref name="existingPerson" refer="ecss:personIdList">
+			<xs:selector xpath=".//*"/>
+			<xs:field xpath="@personID"/>
+		</xs:keyref>
+		<xs:key name="keyNameList">
+			<xs:selector xpath="ecss:database/ecss:proprietary_extensions/ecss:key"/>
+			<xs:field xpath="@name"/>
+		</xs:key>
+		<xs:keyref name="existingKeyName" refer="ecss:keyNameList">
+			<xs:selector xpath=".//ecss:keyRef"/>
+			<xs:field xpath="@name"/>
+		</xs:keyref>
+		<xs:key name="context_file_name_list">
+			<xs:selector xpath="ecss:data_definition_exchange/ecss:dde_body/ecss:item_body/ecss:element/ecss:element_body/ecss:entry_file"/>
+			<xs:field xpath="@context_file_name"/>
+		</xs:key>
+	</xs:element>
+	<!--Types globaux-->
+	<!--Types simples-->
+	<xs:simpleType name="NotEmptyString">
+		<xs:restriction base="xs:string">
+			<xs:minLength value="1"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="keyNameType">
+		<xs:restriction base="ecss:NotEmptyString"/>
+	</xs:simpleType>
+	<xs:simpleType name="native_format_file_name">
+		<xs:restriction base="ecss:NotEmptyString"/>
+	</xs:simpleType>
+	<xs:simpleType name="context_file_nameType">
+		<xs:restriction base="ecss:NotEmptyString"/>
+	</xs:simpleType>
+	<xs:simpleType name="companyIdType">
+		<xs:restriction base="ecss:NotEmptyString"/>
+	</xs:simpleType>
+	<xs:simpleType name="iso639_2lettersCodeType">
+		<xs:restriction base="ecss:NotEmptyString">
+			<xs:enumeration value="AA"/>
+			<xs:enumeration value="AB"/>
+			<xs:enumeration value="AF"/>
+			<xs:enumeration value="AM"/>
+			<xs:enumeration value="AR"/>
+			<xs:enumeration value="AS"/>
+			<xs:enumeration value="AY"/>
+			<xs:enumeration value="AZ"/>
+			<xs:enumeration value="BA"/>
+			<xs:enumeration value="BE"/>
+			<xs:enumeration value="BG"/>
+			<xs:enumeration value="BH"/>
+			<xs:enumeration value="BI"/>
+			<xs:enumeration value="BN"/>
+			<xs:enumeration value="BO"/>
+			<xs:enumeration value="BR"/>
+			<xs:enumeration value="CA"/>
+			<xs:enumeration value="CO"/>
+			<xs:enumeration value="CS"/>
+			<xs:enumeration value="CY"/>
+			<xs:enumeration value="DA"/>
+			<xs:enumeration value="DE"/>
+			<xs:enumeration value="DZ"/>
+			<xs:enumeration value="EL"/>
+			<xs:enumeration value="EN"/>
+			<xs:enumeration value="EO"/>
+			<xs:enumeration value="ES"/>
+			<xs:enumeration value="ET"/>
+			<xs:enumeration value="EU"/>
+			<xs:enumeration value="FA"/>
+			<xs:enumeration value="FI"/>
+			<xs:enumeration value="FJ"/>
+			<xs:enumeration value="FO"/>
+			<xs:enumeration value="FR"/>
+			<xs:enumeration value="FY"/>
+			<xs:enumeration value="GA"/>
+			<xs:enumeration value="GD"/>
+			<xs:enumeration value="GL"/>
+			<xs:enumeration value="GN"/>
+			<xs:enumeration value="GU"/>
+			<xs:enumeration value="HA"/>
+			<xs:enumeration value="HI"/>
+			<xs:enumeration value="HR"/>
+			<xs:enumeration value="HU"/>
+			<xs:enumeration value="HY"/>
+			<xs:enumeration value="IA"/>
+			<xs:enumeration value="IE"/>
+			<xs:enumeration value="IK"/>
+			<xs:enumeration value="IN"/>
+			<xs:enumeration value="IS"/>
+			<xs:enumeration value="IT"/>
+			<xs:enumeration value="IW"/>
+			<xs:enumeration value="JA"/>
+			<xs:enumeration value="JI"/>
+			<xs:enumeration value="JW"/>
+			<xs:enumeration value="KA"/>
+			<xs:enumeration value="KK"/>
+			<xs:enumeration value="KL"/>
+			<xs:enumeration value="KM"/>
+			<xs:enumeration value="KN"/>
+			<xs:enumeration value="KO"/>
+			<xs:enumeration value="KS"/>
+			<xs:enumeration value="KU"/>
+			<xs:enumeration value="KY"/>
+			<xs:enumeration value="LA"/>
+			<xs:enumeration value="LN"/>
+			<xs:enumeration value="LO"/>
+			<xs:enumeration value="LT"/>
+			<xs:enumeration value="LV"/>
+			<xs:enumeration value="MG"/>
+			<xs:enumeration value="MI"/>
+			<xs:enumeration value="MK"/>
+			<xs:enumeration value="ML"/>
+			<xs:enumeration value="MN"/>
+			<xs:enumeration value="MO"/>
+			<xs:enumeration value="MR"/>
+			<xs:enumeration value="MS"/>
+			<xs:enumeration value="MT"/>
+			<xs:enumeration value="MY"/>
+			<xs:enumeration value="NA"/>
+			<xs:enumeration value="NE"/>
+			<xs:enumeration value="NL"/>
+			<xs:enumeration value="NO"/>
+			<xs:enumeration value="OC"/>
+			<xs:enumeration value="OM"/>
+			<xs:enumeration value="OR"/>
+			<xs:enumeration value="PA"/>
+			<xs:enumeration value="PL"/>
+			<xs:enumeration value="PS"/>
+			<xs:enumeration value="PT"/>
+			<xs:enumeration value="QU"/>
+			<xs:enumeration value="RM"/>
+			<xs:enumeration value="RN"/>
+			<xs:enumeration value="RO"/>
+			<xs:enumeration value="RU"/>
+			<xs:enumeration value="RW"/>
+			<xs:enumeration value="SA"/>
+			<xs:enumeration value="SD"/>
+			<xs:enumeration value="SG"/>
+			<xs:enumeration value="SH"/>
+			<xs:enumeration value="SI"/>
+			<xs:enumeration value="SK"/>
+			<xs:enumeration value="SL"/>
+			<xs:enumeration value="SM"/>
+			<xs:enumeration value="SN"/>
+			<xs:enumeration value="SO"/>
+			<xs:enumeration value="SQ"/>
+			<xs:enumeration value="SR"/>
+			<xs:enumeration value="SS"/>
+			<xs:enumeration value="ST"/>
+			<xs:enumeration value="SU"/>
+			<xs:enumeration value="SV"/>
+			<xs:enumeration value="SW"/>
+			<xs:enumeration value="TA"/>
+			<xs:enumeration value="TE"/>
+			<xs:enumeration value="TG"/>
+			<xs:enumeration value="TH"/>
+			<xs:enumeration value="TI"/>
+			<xs:enumeration value="TK"/>
+			<xs:enumeration value="TL"/>
+			<xs:enumeration value="TN"/>
+			<xs:enumeration value="TO"/>
+			<xs:enumeration value="TR"/>
+			<xs:enumeration value="TS"/>
+			<xs:enumeration value="TT"/>
+			<xs:enumeration value="TW"/>
+			<xs:enumeration value="UK"/>
+			<xs:enumeration value="UR"/>
+			<xs:enumeration value="UZ"/>
+			<xs:enumeration value="VI"/>
+			<xs:enumeration value="VO"/>
+			<xs:enumeration value="WO"/>
+			<xs:enumeration value="XH"/>
+			<xs:enumeration value="YO"/>
+			<xs:enumeration value="ZH"/>
+			<xs:enumeration value="ZU"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="levelType">
+		<xs:restriction base="ecss:NotEmptyString"/>
+	</xs:simpleType>
+	<xs:simpleType name="personIdType">
+		<xs:restriction base="xs:nonNegativeInteger"/>
+	</xs:simpleType>
+	<xs:simpleType name="status_codeType">
+		<xs:restriction base="ecss:NotEmptyString">
+			<xs:enumeration value="Unknown"/>
+			<xs:enumeration value="In Preparation"/>
+			<xs:enumeration value="In Review"/>
+			<xs:enumeration value="Released"/>
+			<xs:enumeration value="Withdrawn"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="urlType">
+		<xs:restriction base="ecss:NotEmptyString"/>
+	</xs:simpleType>
+	<!--Types complexes-->
+	<xs:complexType name="authorsType">
+		<xs:sequence>
+			<xs:element name="author" type="ecss:person_and_company" maxOccurs="unbounded"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="change_identification">
+		<xs:sequence>
+			<xs:element name="change">
+				<xs:complexType>
+					<xs:complexContent>
+						<xs:extension base="ecss:date_time">
+							<xs:attribute name="change_level" type="ecss:levelType" use="required"/>
+						</xs:extension>
+					</xs:complexContent>
+				</xs:complexType>
+			</xs:element>
+			<xs:element name="issue" minOccurs="0">
+				<xs:complexType>
+					<xs:complexContent>
+						<xs:extension base="ecss:date_time">
+							<xs:attribute name="issue_level" type="ecss:levelType" use="required"/>
+						</xs:extension>
+					</xs:complexContent>
+				</xs:complexType>
+			</xs:element>
+		</xs:sequence>
+		<xs:attribute name="status_code" type="ecss:status_codeType" use="required"/>
+	</xs:complexType>
+	<xs:complexType name="company">
+		<xs:sequence>
+			<xs:element name="name" type="ecss:NotEmptyString"/>
+			<xs:element name="address" type="ecss:NotEmptyString" minOccurs="0"/>
+		</xs:sequence>
+		<xs:attribute name="design_activity_code" type="ecss:companyIdType"/>
+	</xs:complexType>
+	<xs:complexType name="companyType">
+		<xs:complexContent>
+			<xs:extension base="ecss:company"/>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="companyRefType">
+		<xs:attribute name="companyID" type="ecss:companyIdType" use="required"/>
+	</xs:complexType>
+	<xs:complexType name="configuration">
+		<xs:sequence>
+			<xs:element name="configuration_id" type="ecss:NotEmptyString"/>
+			<xs:element name="product_name" type="ecss:NotEmptyString"/>
+			<xs:element name="preparing_contracts" type="ecss:preparing_contractsType" minOccurs="0"/>
+			<xs:element name="release_authorizations" type="ecss:release_authorizationsType" minOccurs="0"/>
+			<xs:element name="security_identifications" type="ecss:security_identificationsType" minOccurs="0"/>
+			<xs:element name="distribution_authorizations" type="ecss:distribution_authorizationsType" minOccurs="0"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="contract">
+		<xs:sequence>
+			<xs:element name="contract_number" type="ecss:NotEmptyString"/>
+			<xs:element name="contract_data_requirements_list" type="ecss:NotEmptyString" minOccurs="0"/>
+			<xs:element name="data_item_description_identification" type="ecss:NotEmptyString" minOccurs="0"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="databaseType">
+		<xs:sequence>
+			<xs:element name="companies">
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element name="company" type="ecss:companyType" maxOccurs="unbounded"/>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
+			<xs:element name="persons" minOccurs="0">
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element name="person" type="ecss:personType" maxOccurs="unbounded"/>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
+			<xs:element name="proprietary_extensions" minOccurs="0">
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element name="key" maxOccurs="unbounded">
+							<xs:complexType>
+								<xs:attribute name="name" type="ecss:keyNameType" use="required"/>
+							</xs:complexType>
+						</xs:element>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="data_package">
+		<xs:sequence>
+			<xs:element name="data_definition_exchange" type="ecss:data_definition_exchange"/>
+			<xs:element name="database" type="ecss:databaseType"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="data_definition_exchange">
+		<xs:sequence>
+			<xs:element name="dde_properties" type="ecss:dde_propertiesType"/>
+			<xs:element name="dde_body" type="ecss:item"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="date_time">
+		<xs:attribute name="date" type="xs:date" use="required"/>
+		<xs:attribute name="specific_time" type="xs:time" use="optional" default="00:00:00"/>
+	</xs:complexType>
+	<xs:complexType name="dde_identification">
+		<xs:complexContent>
+			<xs:extension base="ecss:identification">
+				<xs:sequence>
+					<xs:element name="design_activity" type="ecss:companyRefType"/>
+					<xs:element name="title" type="ecss:NotEmptyString" minOccurs="0"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="dde_propertiesType">
+		<xs:sequence>
+			<xs:element name="dde_identification" type="ecss:dde_identification"/>
+			<xs:element name="data_configuration" type="ecss:configuration"/>
+			<xs:element name="date_of_transfer" type="ecss:date_time" minOccurs="0"/>
+			<xs:element name="dde_exchange_purpose" type="ecss:NotEmptyString" minOccurs="0"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="delivery_accounting">
+		<xs:sequence>
+			<xs:element name="reference_identification" type="ecss:NotEmptyString"/>
+			<xs:element name="reference_identification_description" type="ecss:NotEmptyString"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="distribution_authorizationsType">
+		<xs:sequence>
+			<xs:element name="distribution_authorization" type="ecss:person_or_company" maxOccurs="unbounded"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="document_elementType">
+		<xs:sequence>
+			<xs:element name="title" type="ecss:NotEmptyString"/>
+			<xs:element name="change_status" type="ecss:change_identification"/>
+			<xs:element name="document_abstract" type="ecss:NotEmptyString" minOccurs="0"/>
+			<xs:element name="authors" type="ecss:authorsType" minOccurs="0"/>
+			<xs:element name="distribution_authorizations" type="ecss:distribution_authorizationsType" minOccurs="0"/>
+			<xs:element name="element_codes" type="ecss:element_codesType" minOccurs="0"/>
+			<xs:element name="keywords" type="ecss:keywordsType" minOccurs="0"/>
+			<xs:element name="changes_managed_by_sender" type="xs:boolean" minOccurs="0"/>
+			<xs:element name="proprietary_extensions" type="ecss:proprietary_extensionsType" minOccurs="0"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="element">
+		<xs:sequence>
+			<xs:element name="element_properties" type="ecss:element_propertiesType"/>
+			<xs:element name="element_body" type="ecss:element_bodyType"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="element_bodyType">
+		<xs:sequence>
+			<xs:element name="entry_file_or_url" minOccurs="0" maxOccurs="unbounded">
+				<xs:complexType>
+					<xs:choice>
+						<xs:element name="entry_file">
+							<xs:complexType>
+								<xs:complexContent>
+									<xs:extension base="ecss:file"/>
+								</xs:complexContent>
+							</xs:complexType>
+						</xs:element>
+						<xs:element name="entry_url">
+							<xs:complexType>
+								<xs:complexContent>
+									<xs:extension base="ecss:url"/>
+								</xs:complexContent>
+							</xs:complexType>
+						</xs:element>
+					</xs:choice>
+					<xs:attribute name="byte_size" type="xs:unsignedLong" use="optional"/>
+				</xs:complexType>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="element_codesType">
+		<xs:sequence>
+			<xs:element name="element_code" type="ecss:NotEmptyString" minOccurs="0" maxOccurs="unbounded"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="element_identification">
+		<xs:complexContent>
+			<xs:extension base="ecss:identification">
+				<xs:sequence>
+					<xs:element name="design_activity" type="ecss:companyRefType"/>
+					<xs:element name="language_code" type="ecss:iso639_2lettersCodeType" minOccurs="0"/>
+					<xs:choice>
+						<xs:element name="document_element" type="ecss:document_elementType"/>
+						<xs:element name="proprietary_element">
+							<xs:complexType>
+								<xs:sequence>
+									<xs:any namespace="##other"/>
+								</xs:sequence>
+							</xs:complexType>
+						</xs:element>
+					</xs:choice>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="element_propertiesType">
+		<xs:sequence>
+			<xs:element name="identification" type="ecss:element_identification"/>
+			<xs:element name="entry_notes" type="ecss:entry_notesType" minOccurs="0"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="entry_notesType">
+		<xs:sequence>
+			<xs:element name="entry_note" type="ecss:notation" minOccurs="0" maxOccurs="unbounded"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="file">
+		<xs:attribute name="context_file_name" type="ecss:context_file_nameType" use="required"/>
+		<xs:attribute name="native_format_file_name" type="ecss:native_format_file_name" use="required"/>
+	</xs:complexType>
+	<xs:complexType name="item">
+		<xs:sequence>
+			<xs:element name="item_properties" type="ecss:item_identification" minOccurs="0"/>
+			<xs:element name="item_body" type="ecss:item_bodyType"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="item_bodyType">
+		<xs:sequence>
+			<xs:element name="element" type="ecss:element" minOccurs="0" maxOccurs="unbounded"/>
+			<xs:element name="sub_item" type="ecss:item" minOccurs="0" maxOccurs="unbounded"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="item_identification">
+		<xs:complexContent>
+			<xs:extension base="ecss:identification">
+				<xs:sequence>
+					<xs:element name="nomenclature_or_name" type="ecss:NotEmptyString" minOccurs="0"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="identification">
+		<xs:sequence>
+			<xs:element name="identifying_number" type="ecss:NotEmptyString"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="keywordsType">
+		<xs:sequence>
+			<xs:element name="keyword" type="ecss:NotEmptyString" minOccurs="0" maxOccurs="unbounded"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="notation">
+		<xs:sequence>
+			<xs:element name="note" type="ecss:NotEmptyString"/>
+			<xs:element name="type_of_notation" type="ecss:NotEmptyString" minOccurs="0"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="person">
+		<xs:sequence>
+			<xs:element name="last_name" type="ecss:NotEmptyString"/>
+			<xs:element name="first_name" type="ecss:NotEmptyString" minOccurs="0"/>
+			<xs:element name="middle_name" type="ecss:NotEmptyString" minOccurs="0"/>
+			<xs:element name="title" type="ecss:NotEmptyString" minOccurs="0"/>
+			<xs:element name="email_address" type="ecss:NotEmptyString" minOccurs="0"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="personType">
+		<xs:complexContent>
+			<xs:extension base="ecss:person">
+				<xs:attribute name="personID" type="ecss:personIdType" use="required"/>
+				<xs:attribute name="companyID" type="ecss:companyIdType" use="required"/>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="personRefType">
+		<xs:attribute name="personID" type="ecss:personIdType" use="required"/>
+	</xs:complexType>
+	<xs:complexType name="person_and_company">
+		<xs:sequence>
+			<xs:element name="company" type="ecss:companyRefType"/>
+			<xs:element name="person" type="ecss:personRefType" minOccurs="0"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="person_or_company">
+		<xs:choice>
+			<xs:element name="company" type="ecss:companyRefType"/>
+			<xs:element name="person" type="ecss:personRefType"/>
+		</xs:choice>
+	</xs:complexType>
+	<xs:complexType name="preparing_contractsType">
+		<xs:sequence>
+			<xs:element name="preparing_contract" type="ecss:contract" minOccurs="0" maxOccurs="unbounded"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="proprietary_extensionsType">
+		<xs:sequence>
+			<xs:element name="keyRef" minOccurs="0" maxOccurs="unbounded">
+				<xs:complexType>
+					<xs:attribute name="name" type="ecss:keyNameType" use="required"/>
+					<xs:attribute name="value" type="ecss:NotEmptyString" use="required"/>
+				</xs:complexType>
+			</xs:element>
+			<xs:any namespace="##other" minOccurs="0" maxOccurs="unbounded"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="release_authentication">
+		<xs:sequence>
+			<xs:element name="release_date" type="ecss:date_time"/>
+			<xs:element name="release_authority" type="ecss:person_and_company"/>
+			<xs:element name="authentication" type="ecss:NotEmptyString" minOccurs="0"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="release_authorizationsType">
+		<xs:sequence>
+			<xs:element name="release_authorization" type="ecss:release_authentication" minOccurs="0" maxOccurs="unbounded"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="security_classification">
+		<xs:sequence>
+			<xs:element name="item_classification" type="ecss:NotEmptyString"/>
+			<xs:element name="title_security_classification" type="ecss:NotEmptyString" minOccurs="0"/>
+			<xs:element name="classification_date" type="ecss:date_time" minOccurs="0"/>
+			<xs:element name="declassification_date" type="ecss:date_time" minOccurs="0"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="special_condition">
+		<xs:sequence>
+			<xs:element name="description" type="ecss:NotEmptyString" minOccurs="0"/>
+			<xs:element name="code" type="ecss:NotEmptyString" minOccurs="0"/>
+			<xs:element name="type_of_coding_scheme" type="ecss:NotEmptyString" minOccurs="0"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="security_identificationsType">
+		<xs:sequence>
+			<xs:element name="security_identification" type="ecss:security_classification" minOccurs="0" maxOccurs="unbounded"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="url">
+		<xs:attribute name="url" type="ecss:urlType" use="required"/>
+	</xs:complexType>
+</xs:schema>
