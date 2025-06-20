@@ -77,8 +77,9 @@ const mockResults: SearchResult[] = [
 
 async function searchMorphik(query: string): Promise<SearchResult[]> {
   try {
-    // Call the Flask backend API that interfaces with Morphik
-    const response = await fetch(`http://localhost:5000/api/search?q=${encodeURIComponent(query)}`);
+    // Use environment variable for backend API URL, fallback to Render URL
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'https://ecss-hunt.onrender.com';
+    const response = await fetch(`${apiUrl}/api/search?q=${encodeURIComponent(query)}`);
     
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
