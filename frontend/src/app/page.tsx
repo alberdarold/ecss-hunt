@@ -42,16 +42,16 @@ export default function Home() {
     setError(null);
 
     try {
-      const response = await fetch('/api/search', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          query: query.trim(),
-          filters
-        }),
+      // Build query string for filters
+      const params = new URLSearchParams({
+        q: query.trim(),
       });
+      if (filters.branch) params.append('branch', filters.branch);
+      if (filters.discipline) params.append('discipline', filters.discipline);
+      if (filters.revision) params.append('revision', filters.revision);
+
+      // Call Flask backend directly
+      const response = await fetch(`http://localhost:5000/api/search?${params.toString()}`);
 
       if (!response.ok) {
         throw new Error(`Search failed: ${response.statusText}`);

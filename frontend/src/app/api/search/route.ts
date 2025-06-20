@@ -6,6 +6,7 @@ interface SearchResult {
   title: string;
   content: string;
   score: number;
+  relevance?: number;
   metadata: {
     branch?: string;
     branch_name?: string;
@@ -19,7 +20,7 @@ interface SearchResult {
   };
 }
 
-// Mock data for demonstration when Morphik is not available
+// Mock data for fallback when Morphik is not available
 const mockResults: SearchResult[] = [
   {
     id: '1',
@@ -74,6 +75,27 @@ const mockResults: SearchResult[] = [
   }
 ];
 
+async function searchMorphik(query: string): Promise<SearchResult[]> {
+  try {
+    // Call the Flask backend API that interfaces with Morphik
+    const response = await fetch(`http://localhost:5000/api/search?q=${encodeURIComponent(query)}`);
+    
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    
+    const data = await response.json();
+    console.log('Morphik API response:', data);
+    
+    // Return the results from the Flask backend
+    return data.results || [];
+    
+  } catch (error) {
+    console.error('Morphik search error:', error);
+    throw error;
+  }
+}
+
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
   const query = searchParams.get('q') || '';
@@ -86,18 +108,25 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    // For now, use mock data since Morphik is not available in frontend
-    // In a production environment, you would make HTTP requests to your backend API
-    console.log('Using mock data for demonstration');
+    console.log(`Searching for: "${query}"`);
     
-    // Filter mock results based on query
-    const filteredMockResults = mockResults.filter(result => 
-      result.title.toLowerCase().includes(query.toLowerCase()) ||
-      result.content.toLowerCase().includes(query.toLowerCase())
-    );
+    // Try to use Morphik first (Flask backend)
+    let results: SearchResult[];
+    try {
+      results = await searchMorphik(query);
+      console.log('Using Morphik search results from Flask backend');
+    } catch (morphikError) {
+      console.log('Morphik search failed, using mock data:', morphikError);
+      
+      // Fallback to mock data
+      results = mockResults.filter(result => 
+        result.title.toLowerCase().includes(query.toLowerCase()) ||
+        result.content.toLowerCase().includes(query.toLowerCase())
+      );
+    }
     
     // Apply additional filters
-    let finalResults = filteredMockResults;
+    let finalResults = results;
     
     if (branch) {
       finalResults = finalResults.filter((r: SearchResult) => r.metadata.branch === branch);
@@ -113,7 +142,8 @@ export async function GET(request: NextRequest) {
     
     return NextResponse.json({
       results: finalResults,
-      total: finalResults.length
+      total: finalResults.length,
+      query: query
     });
     
   } catch (error) {
@@ -123,7 +153,8 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({
       results: mockResults.slice(0, 2),
       total: 2,
-      error: 'Using mock data due to API error'
+      error: 'Using mock data due to API error',
+      query: query
     });
   }
 } 
