@@ -50,8 +50,9 @@ export default function Home() {
       if (filters.discipline) params.append('discipline', filters.discipline);
       if (filters.revision) params.append('revision', filters.revision);
 
-      // Call Flask backend directly
-      const response = await fetch(`http://localhost:5000/api/search?${params.toString()}`);
+      // Call Flask backend using environment variable or Render URL
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'https://ecss-hunt.onrender.com';
+      const response = await fetch(`${apiUrl}/api/search?${params.toString()}`);
 
       if (!response.ok) {
         throw new Error(`Search failed: ${response.statusText}`);
