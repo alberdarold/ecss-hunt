@@ -9,7 +9,7 @@ import json
 load_dotenv()
 
 app = Flask(__name__)
-CORS(app)  # Enable CORS for frontend integration
+CORS(app, origins=["https://ecss-hunt.vercel.app"])  # Enable CORS for Vercel frontend
 
 # Initialize Morphik client
 def get_morphik_client():
