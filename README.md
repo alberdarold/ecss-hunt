@@ -5,7 +5,7 @@ A web-based platform that enables space engineers and professionals to efficient
 ## Project Status
 
 ✅ **Frontend**: Complete and functional with modern UI  
-✅ **Backend API**: Implemented with Next.js API routes  
+✅ **Backend API**: Implemented with Flask (Python) and Morphik integration  
 ⚠️ **Document Ingestion**: Working but documents stuck in processing (Morphik issue)  
 ⚠️ **Search Integration**: Ready but waiting for Morphik processing completion  
 
@@ -17,19 +17,26 @@ ecss-hunt/
 │   ├── src/app/             # Next.js App Router
 │   ├── public/              # Static assets
 │   └── package.json         # Frontend dependencies
-├── backend/                  # Python ingestion scripts
-│   ├── ingest_documents.py  # Main ingestion script
-│   ├── ingest_single_document.py
-│   ├── test_ingestion.py
-│   ├── test_morphik_api.py
-│   └── requirements.txt
+├── backend/                  # Python backend and ingestion
+│   ├── core/                # Main backend API (Flask server, logic, schemas, etc.)
+│   ├── config/              # Environment and config files
+│   ├── analysis/            # Analysis scripts
+│   ├── debug/               # Debugging tools
+│   ├── docs/                # Backend documentation
+│   ├── extracted_images/    # Extracted images from ECSS docs
+│   ├── results/             # Ingestion and analysis results
+│   ├── tests/               # Backend tests
+│   └── README.md            # Backend-specific README
 ├── ECSS Published Standards/ # ECSS PDF documents
 │   ├── 1-Active Standards/
 │   └── 2-Superseded Standards/
 ├── ECSS Utils/              # Supporting documentation
 └── docs/                    # Project documentation
-    ├── ECSS Standards Navigator - Implementation Plan and System Architecture.md
-    └── PROJECT_STRUCTURE.md
+    ├── 01-Project-Overview/
+    ├── 02-Implementation/
+    ├── 03-Optimization/
+    ├── 04-Analysis/
+    └── 05-Architecture/
 ```
 
 ## Quick Start
@@ -41,36 +48,49 @@ npm install
 npm run dev
 ```
 
-### Backend Ingestion (Python)
+### Backend API (Flask)
 ```bash
-cd backend
-pip install -r requirements.txt
-python ingest_documents.py
+cd backend/core
+pip install -r ../config/requirements.txt
+python api_server.py
 ```
 
-## Current Issues
+### Backend Ingestion (Python)
+```bash
+cd backend/core
+python clean_and_ingest.py
+```
 
-1. **Morphik Processing**: Documents are being uploaded successfully but remain stuck in "processing" status
-2. **Search Results**: No search results available until Morphik processing is resolved
-3. **Free Tier Limits**: Hit Morphik's free tier file count limit (resolved with new account)
+## CORS & Deployment Notes
 
-## Next Steps
+- The backend now includes a CORS fix to allow requests from:
+  - `http://localhost:3000` (local frontend)
+  - `https://ecss-hunt.vercel.app` (production frontend)
+  - `https://ecss-hunt.onrender.com` (backend itself)
+- **If you deploy the backend (e.g., to Render), make sure to redeploy after any CORS or API changes.**
+- If you see `CORS` errors in the browser, ensure the deployed backend is running the latest code.
 
-1. **Morphik Support**: Awaiting response from Morphik support team
-2. **Document Processing**: Resolve document processing issues
-3. **Production Deployment**: Deploy to Vercel once processing is working
-4. **User Testing**: Conduct user acceptance testing
+## Troubleshooting
+
+- **CORS Error:**
+  - Make sure the backend is redeployed with the latest CORS configuration.
+  - For local development, use `http://localhost:5000` for backend and `http://localhost:3000` for frontend.
+- **Failed to Fetch:**
+  - Check backend logs for errors.
+  - Ensure both frontend and backend are running and accessible.
+- **Morphik Processing:**
+  - Documents may be stuck in processing due to Morphik platform issues. Contact Morphik support if needed.
 
 ## Technology Stack
 
-- **Frontend**: Next.js 14, React 18, TypeScript, Tailwind CSS
-- **Backend**: Next.js API Routes, Python ingestion scripts
-- **Search**: Morphik Cloud RAG platform
-- **Deployment**: Vercel (planned)
-- **Authentication**: NextAuth.js (planned)
+- **Frontend:** Next.js 14, React 18, TypeScript, Tailwind CSS
+- **Backend:** Flask (Python), Morphik integration, modular structure
+- **Search:** Morphik Cloud RAG platform
+- **Deployment:** Vercel (frontend), Render or similar (backend)
+- **Authentication:** NextAuth.js (planned)
 
 ## Documentation
 
-- [Implementation Plan](docs/ECSS%20Standards%20Navigator%20-%20Implementation%20Plan%20and%20System%20Architecture.md)
-- [Project Structure](docs/PROJECT_STRUCTURE.md)
+- [Implementation Plan](docs/05-Architecture/ECSS%20Standards%20Navigator%20-%20Implementation%20Plan%20and%20System%20Architecture.md)
+- [Project Structure](docs/01-Project-Overview/PROJECT_STRUCTURE.md)
 - [Backend API](frontend/BACKEND_API.md) 
