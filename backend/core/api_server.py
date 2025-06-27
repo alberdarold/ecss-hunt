@@ -24,12 +24,24 @@ import uuid
 dotenv_path = Path(__file__).parent.parent / '.env'
 
 app = Flask(__name__)
-CORS(app, resources={r"/api/*": {"origins": [
-    "http://localhost:3000",
-    "https://ecss-hunt.vercel.app",
-    "https://ecss-hunt-alberdarolds-projects.vercel.app",
-    "https://ecss-hunt.onrender.com"
-]}}, supports_credentials=True)
+# More permissive CORS configuration to fix deployment issues
+CORS(app, 
+     origins="*",  # Allow all origins temporarily
+     methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+     allow_headers=["Content-Type", "Authorization", "Access-Control-Allow-Credentials"],
+     supports_credentials=False  # Set to False when using wildcard origins
+)
+
+# Add additional CORS headers for all responses
+@app.after_request
+def after_request(response):
+    origin = request.headers.get('Origin')
+    if origin:
+        response.headers.add('Access-Control-Allow-Origin', origin)
+        response.headers.add('Access-Control-Allow-Headers', 'Content-Type,Authorization')
+        response.headers.add('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,OPTIONS')
+        response.headers.add('Access-Control-Allow-Credentials', 'true')
+    return response
 
 # Initialize Morphik client and optimized graph manager
 def get_morphik_client():
