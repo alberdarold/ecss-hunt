@@ -89,8 +89,7 @@ def search():
                 colpali_response = db.query(
                     query,
                     use_colpali=True,  # Enable ColPali for visual understanding
-                    k=5,  # Limit results for ColPali
-                    model_config={"model_name": "gpt-4o"}
+                    k=5  # Limit results for ColPali
                 )
                 
                 # Merge ColPali results with graph results if available
@@ -495,7 +494,6 @@ def search_images():
                 query,
                 use_colpali=True,  # Enable ColPali for visual understanding
                 k=10,  # Get more results for visual content
-                model_config={"model_name": "gpt-4o"}
             )
             
             results = []
@@ -750,11 +748,11 @@ def health_check():
                 'error': 'Morphik connection failed'
             })
         
-            return jsonify({
+        return jsonify({
             'status': 'healthy',
             'morphik_connected': True,
             'graph_manager_available': graph_manager is not None
-            })
+        })
         
     except Exception as e:
         return jsonify({
