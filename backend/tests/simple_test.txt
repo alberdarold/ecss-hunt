@@ -1,0 +1,11 @@
+This is a simple test document for Morphik ingestion.
+
+It contains basic text content to validate the parsing and rule application process.
+
+Standard: ECSS-TEST-01
+Title: Simple Text Document Test
+Date: 2025-06-22
+Scope: To verify that Morphik can ingest and process basic text and PDF files.
+
+Requirement REQ-TEST-001: The system shall correctly parse this text.
+Requirement REQ-TEST-002: The system shall apply NaturalLanguageRules to this content. 

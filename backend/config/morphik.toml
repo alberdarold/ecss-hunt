@@ -1,0 +1,114 @@
+# Morphik Configuration for ECSS Standards Navigator
+# Based on official Morphik documentation and best practices
+
+[api]
+host = "0.0.0.0"  # Allow external connections for deployment
+port = 8000
+reload = true
+
+[auth]
+jwt_algorithm = "HS256"
+dev_mode = true  # Simplified auth for development
+dev_entity_id = "ecss_user"
+dev_entity_type = "developer"
+dev_permissions = ["read", "write", "admin"]
+
+# AI Provider Configuration - CRITICAL for OpenAI API calls
+[ai_providers]
+# OpenAI configuration
+openai = { api_key = "${OPENAI_API_KEY}" }
+
+# Registered Models - Centralized model definitions
+[registered_models]
+# OpenAI models for high-quality processing
+openai_gpt4o = { model_name = "gpt-4o", provider = "openai" }
+openai_gpt4o_mini = { model_name = "gpt-4o-mini", provider = "openai" }
+openai_embedding_large = { model_name = "text-embedding-3-large", provider = "openai" }
+openai_embedding_small = { model_name = "text-embedding-3-small", provider = "openai" }
+
+# Anthropic models as alternatives
+claude_opus = { model_name = "claude-3-opus-20240229" }
+claude_sonnet = { model_name = "claude-3-5-sonnet-20241022" }
+
+# Completion configuration - required section
+[completion]
+model = "openai_gpt4o"  # Reference to registered model
+default_max_tokens = "2000"
+default_temperature = 0.1
+
+# Database configuration
+[database]
+provider = "postgres"  # Recommended for production
+
+# Embedding configuration - optimized for technical documentation
+[embedding]
+model = "openai_embedding_large"  # Reference to registered model
+dimensions = 3072  # text-embedding-3-large dimensions
+similarity_metric = "cosine"
+
+# Document parsing - optimized for text extraction (no vision processing)
+[parser]
+chunk_size = 1000
+chunk_overlap = 200
+use_unstructured_api = false
+use_contextual_chunking = false  # Disable to avoid processing conflicts
+# contextual_chunking_model = "openai_gpt4o_mini"  # Commented out
+
+# Vision processing ENABLED with minimal settings
+[parser.vision]
+enabled = true
+model = "openai_gpt4o_mini"  # Use smaller model for efficiency
+provider = "openai"  # Explicitly specify OpenAI provider
+
+# PDF specific parsing strategy
+[parser.pdf]
+# strategy = "text" -> Prioritize raw text extraction
+# strategy = "image" -> Treat pages as images (current default)
+# strategy = "auto" -> Let Morphik decide
+strategy = "auto"
+
+# Reranking for better search results
+[reranker]
+use_reranker = true
+provider = "flag"
+model_name = "BAAI/bge-reranker-large"
+query_max_length = 256
+passage_max_length = 512
+use_fp16 = true
+device = "auto"  # Auto-detect best device
+
+# Storage configuration
+[storage]
+provider = "local"
+storage_path = "./storage"
+
+# Vector store configuration
+[vector_store]
+provider = "pgvector"  # PostgreSQL with pgvector extension
+
+# Rules engine for document processing
+[rules]
+model = "openai_gpt4o"  # Use GPT-4o for rules processing
+provider = "openai"  # Explicitly specify OpenAI provider
+batch_size = 4096
+
+# Knowledge graph configuration
+[graph]
+model = "openai_gpt4o"  # Use GPT-4o for entity extraction
+provider = "openai"  # Explicitly specify OpenAI provider
+enable_entity_resolution = true
+
+# General Morphik settings
+[morphik]
+enable_colpali = true   # Enable ColPali but with text-first approach
+mode = "self_hosted"     # Self-hosted deployment
+
+# Query optimization - moved to proper section
+[query]
+k = 10                  # Return more results for better coverage
+use_reranking = true    # Enable reranking for better relevance
+hop_depth = 2           # Graph traversal depth for knowledge graph queries
+
+# Telemetry (optional)
+[telemetry]
+enabled = false         # Disable for privacy 

@@ -1,0 +1,87 @@
+Subject: Bug Report: PDF Text Parser Fails on Complex Documents with use_colpali=False
+
+Hi Morphik Team,
+
+We are writing to report a critical bug in the Morphik PDF ingestion pipeline that is preventing us from using your rules-based features on our technical documents.
+
+**Summary of the Issue:**
+
+When ingesting complex, text-based PDF files (specifically, ECSS space standards) with `use_colpali=False`, the ingestion process fails with the error: `'No content chunks (text or image) could be extracted from the document'`.
+
+This effectively means we cannot use text-based features like `NaturalLanguageRule` or `MetadataExtractionRule` on our document corpus, as the alternative (`use_colpali=True`) only extracts page images, which are not processable by the rules engine.
+
+---
+
+**Detailed Investigation and Findings:**
+
+We have conducted a thorough investigation and can confirm the following:
+
+1.  **The PDFs are Text-Based:** We have verified using local libraries (`pdfplumber`) that our source PDFs are not scanned images and contain selectable, extractable text.
+
+2.  **`use_colpali=True` (Default) Extracts Only Images:** When we ingest files using the default visual pipeline (`use_colpali=True`), the process succeeds, but the resulting chunks contain **only image data** (entire pages rendered as large base64 PNGs). No extractable text is returned, which makes it impossible to use text-based features like `NaturalLanguageRule`.
+
+3.  **`use_colpali=False` Fails Consistently:** When we switch to the text-based pipeline by setting `use_colpali=False`, the ingestion consistently fails with the "No content chunks" error for all our ECSS documents.
+
+4.  **Controlled Test Confirms the Root Cause:**
+    *   We created a simple "hello world" text file and programmatically generated a basic PDF from it.
+    *   We ingested both the `.txt` and the simple `.pdf` file using `use_colpali=False`.
+    *   **Both files were ingested successfully.**
+
+**Conclusion:**
+
+The root cause is that Morphik's text-based PDF parser (`use_colpali=False`) works for simple PDFs but **fails on the complex structure, formatting, or font encodings present in our ECSS technical standards documents.** The parser appears to be brittle and lacks the robustness to handle these real-world documents, failing silently on the backend without falling back or providing a more specific error.
+
+**Impact:**
+
+This bug is a major blocker for us, as it prevents the use of your most powerful rules-based features on our primary document set.
+
+We are happy to provide sample ECSS documents for your team to use for debugging. Please let us know how we can assist further.
+
+Thank you for your time and attention to this issue.
+
+Best regards,
+[Your Name/Team Name]
+
+## Additional Observations
+
+- This issue occurs consistently across different schema configurations (minimal, descriptive, validated)
+- The same behavior is observed when following the official Morphik documentation examples
+- NaturalLanguageRule works correctly and extracts values, but only in document chunks, not in the metadata field
+- The AI extraction pipeline appears to be functional (as evidenced by NaturalLanguageRule success)
+
+## Environment Details
+
+- Morphik Python SDK: 0.2.2
+- Python Version: 3.11
+- Pydantic Version: 2.11
+- Operating System: Windows 10
+- Morphik Plan: Pro (flat-rate)
+
+## Impact
+
+This issue significantly impacts our ability to implement structured metadata extraction for our ECSS Standards Navigator project. We require reliable, schema-based metadata extraction to properly categorize and search through technical documents.
+
+## Questions
+
+1. Is this a known issue or limitation in the current SDK version?
+2. Are there any workarounds available for structured metadata extraction using schemas?
+3. Is there a timeline for when MetadataExtractionRule will support actual value extraction?
+4. Should we consider this functionality as not yet implemented?
+
+## Request
+
+I would greatly appreciate any guidance on:
+- Confirmation if this is a bug or expected behavior
+- Alternative approaches for structured metadata extraction
+- Timeline for resolution if this is a known issue
+- Best practices for working around this limitation
+
+I'm happy to provide additional details, logs, or test cases if needed to help resolve this issue.
+
+Thank you for your time and assistance.
+
+Best regards,
+
+[Your Name]
+[Your Organization]
+[Your Contact Information] 

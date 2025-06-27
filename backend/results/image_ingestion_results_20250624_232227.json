@@ -1,0 +1,19 @@
+{
+  "total_documents": 1,
+  "successful_ingestions": 0,
+  "failed_ingestions": 1,
+  "total_time": 10.87,
+  "average_time_per_doc": 10.87,
+  "success_rate": 0.0,
+  "ingested_docs": [],
+  "failed_docs": [
+    {
+      "file": "..\\ECSS Published Standards\\1-Active Standards\\ECSS-E-ST-32-08C-Rev.1(15October2014).pdf",
+      "error": "Document.wait_for_completion() got an unexpected keyword argument 'timeout'"
+    }
+  ],
+  "selected_files": [
+    "ECSS-E-ST-32-08C-Rev.1(15October2014).pdf"
+  ],
+  "method_used": "Image-based only (MetadataExtractionRule with images)"
+}

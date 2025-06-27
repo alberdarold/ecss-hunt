@@ -1,0 +1,24 @@
+{
+  "total_documents": 2,
+  "successful_ingestions": 0,
+  "failed_ingestions": 2,
+  "total_time": 114.53,
+  "average_time_per_doc": 57.27,
+  "success_rate": 0.0,
+  "ingested_docs": [],
+  "failed_docs": [
+    {
+      "file": "..\\..\\ECSS Published Standards\\1-Active Standards\\ECSS-E-AS-11C(1October2014).pdf",
+      "error": "Server error '502 Bad Gateway' for url 'https://api.morphik.ai/documents/fe4cf34f-3b71-4d36-805b-9e3e60417c01/status'\nFor more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/502"
+    },
+    {
+      "file": "..\\..\\ECSS Published Standards\\1-Active Standards\\ECSS-E-ST-50-53C(5February2010).pdf",
+      "error": "Server error '502 Bad Gateway' for url 'https://api.morphik.ai/ingest/file'\nFor more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/502"
+    }
+  ],
+  "selected_files": [
+    "ECSS-E-AS-11C(1October2014).pdf",
+    "ECSS-E-ST-50-53C(5February2010).pdf"
+  ],
+  "method_used": "Image-based only (MetadataExtractionRule with images)"
+}
