@@ -11,19 +11,6 @@ import sys
 backend_dir = Path(__file__).parent.parent
 sys.path.insert(0, str(backend_dir))
 
-Optimized Graph Strategy following Morphik Documentation Best Practices
-Based on: https://www.morphik.ai/docs/concepts/knowledge-graphs#performance-considerations
-"""
-from pathlib import Path
-from dotenv import load_dotenv
-load_dotenv(dotenv_path=Path(__file__).parent.parent / "config" / ".env")
-
-import sys
-
-# Add backend root to path
-backend_dir = Path(__file__).parent.parent
-sys.path.insert(0, str(backend_dir))
-
 
 
 from morphik import Morphik
