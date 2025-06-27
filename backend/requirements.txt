@@ -4,3 +4,7 @@ pydantic
 fpdf2
 morphik==0.2.3
 python-dotenv
+flask
+flask-cors
+uuid
+pathlib
