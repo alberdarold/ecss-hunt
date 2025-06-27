@@ -11,6 +11,19 @@ import sys
 backend_dir = Path(__file__).parent.parent
 sys.path.insert(0, str(backend_dir))
 
+Optimized Graph Strategy following Morphik Documentation Best Practices
+Based on: https://www.morphik.ai/docs/concepts/knowledge-graphs#performance-considerations
+"""
+from pathlib import Path
+from dotenv import load_dotenv
+load_dotenv(dotenv_path=Path(__file__).parent.parent / "config" / ".env")
+
+import sys
+
+# Add backend root to path
+backend_dir = Path(__file__).parent.parent
+sys.path.insert(0, str(backend_dir))
+
 
 
 from morphik import Morphik
@@ -133,7 +146,7 @@ class OptimizedECSSGraphManager:
                     hop_depth=hop_depth,
                     include_paths=True,
                     k=k,
-                    use_reranking=use_reranking,
+                    
                     use_colpali=True,  # Enable ColPali for visual understanding
                     model_config={"model_name": "gpt-4o"}
                 )
@@ -145,7 +158,7 @@ class OptimizedECSSGraphManager:
                     hop_depth=hop_depth,
                     include_paths=True,
                     k=k,
-                    use_reranking=use_reranking,
+                    
                     model_config={"model_name": "gpt-4o"}
                 )
             
@@ -372,7 +385,7 @@ class OptimizedECSSGraphManager:
                     hop_depth=hop_depth,
                     include_paths=True,
                     k=k,
-                    use_reranking=use_reranking,
+                    
                     use_colpali=True,  # Enable ColPali for visual understanding
                     model_config={"model_name": "gpt-4o"}
                 )
@@ -384,7 +397,7 @@ class OptimizedECSSGraphManager:
                     hop_depth=hop_depth,
                     include_paths=True,
                     k=k,
-                    use_reranking=use_reranking,
+                    
                     model_config={"model_name": "gpt-4o"}
                 )
             
