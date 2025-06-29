@@ -58,12 +58,17 @@ def search():
     """Search ECSS documents using optimized graph strategy with adaptive settings."""
     query = request.args.get('q', '')
     branch = request.args.get('branch', None)  # Optional branch filter
+    page = int(request.args.get('page', 1))  # Page number (1-based)
+    limit = int(request.args.get('limit', 5))  # Results per page
+    compact = request.args.get('compact', 'true').lower() == 'true'  # Compact results
     
     if not query.strip():
         return jsonify({
             'results': [],
             'total': 0,
-            'query': query
+            'query': query,
+            'page': page,
+            'limit': limit
         })
     
     try:
@@ -202,23 +207,41 @@ def search():
                 })
                 
                 # The 'text' of the source is the specific chunk of text that contributed to the answer
-                source_content = getattr(source, 'text', 'No content available.')
+                source_content = getattr(source, 'text', '')
+                
+                # Skip sources with no meaningful content
+                if not source_content or source_content.strip() == '':
+                    continue
 
-                # Create enhanced content with better formatting based on entity type
-                if source_type == 'section':
-                    full_content = f"**Section from {doc_name}:**\n{source_content}\n\n**Context:**\n{summary_content}"
-                elif source_type == 'definition':
-                    full_content = f"**Definition from {doc_name}:**\n{source_content}\n\n**Context:**\n{summary_content}"
-                elif source_type == 'table':
-                    full_content = f"**Table from {doc_name}:**\n{source_content}\n\n**Context:**\n{summary_content}"
-                elif source_type == 'requirement':
-                    full_content = f"**Requirement from {doc_name}:**\n{source_content}\n\n**Context:**\n{summary_content}"
-                elif source_type == 'diagram':
-                    full_content = f"**Diagram/Image from {doc_name}:**\n{source_content}\n\n**Context:**\n{summary_content}"
-                elif source_type == 'standard':
-                    full_content = f"**Standard Reference from {doc_name}:**\n{source_content}\n\n**Context:**\n{summary_content}"
+                # Create content based on compact flag
+                if compact:
+                    # Compact mode: just the source content without context
+                    full_content = source_content
+                    # Limit content length for compact mode
+                    if len(full_content) > 500:
+                        # Try to cut at sentence boundary
+                        preview = full_content[:500]
+                        last_sentence = preview.rfind('. ')
+                        if last_sentence > 300:
+                            full_content = preview[:last_sentence + 1]
+                        else:
+                            full_content = preview + '...'
                 else:
-                    full_content = f"**Evidence from {doc_name}:**\n{source_content}\n\n**Context:**\n{summary_content}"
+                    # Full mode: enhanced content with formatting and context
+                    if source_type == 'section':
+                        full_content = f"**Section from {doc_name}:**\n{source_content}\n\n**Context:**\n{summary_content}"
+                    elif source_type == 'definition':
+                        full_content = f"**Definition from {doc_name}:**\n{source_content}\n\n**Context:**\n{summary_content}"
+                    elif source_type == 'table':
+                        full_content = f"**Table from {doc_name}:**\n{source_content}\n\n**Context:**\n{summary_content}"
+                    elif source_type == 'requirement':
+                        full_content = f"**Requirement from {doc_name}:**\n{source_content}\n\n**Context:**\n{summary_content}"
+                    elif source_type == 'diagram':
+                        full_content = f"**Diagram/Image from {doc_name}:**\n{source_content}\n\n**Context:**\n{summary_content}"
+                    elif source_type == 'standard':
+                        full_content = f"**Standard Reference from {doc_name}:**\n{source_content}\n\n**Context:**\n{summary_content}"
+                    else:
+                        full_content = f"**Evidence from {doc_name}:**\n{source_content}\n\n**Context:**\n{summary_content}"
 
                 results.append({
                     'id': f"{doc_id}-{getattr(source, 'chunk_id', i)}", # Create a more unique ID for React keys
@@ -227,15 +250,34 @@ def search():
                     'metadata': final_metadata
                 })
         
-        # Sort results by score (highest first)
-        results.sort(key=lambda x: x['score'], reverse=True)
+        # Sort results by score (highest first) - ensure proper ordering
+        results.sort(key=lambda x: float(x.get('score', 0)), reverse=True)
+        
+        # Apply pagination
+        total_results = len(results)
+        start_idx = (page - 1) * limit
+        end_idx = start_idx + limit
+        paginated_results = results[start_idx:end_idx]
+        
+        # Calculate pagination info
+        total_pages = (total_results + limit - 1) // limit  # Ceiling division
+        has_next = page < total_pages
+        has_prev = page > 1
         
         return jsonify({
-            'results': results,
-            'total': len(results),
+            'results': paginated_results,
+            'total': total_results,
             'query': query,
-            'summary': summary_content,
-            'query_settings': query_settings
+            'summary': summary_content if not compact else None,  # Only include summary in non-compact mode
+            'query_settings': query_settings,
+            'pagination': {
+                'page': page,
+                'limit': limit,
+                'total_pages': total_pages,
+                'has_next': has_next,
+                'has_prev': has_prev
+            },
+            'compact': compact
         })
         
     except Exception as e:
