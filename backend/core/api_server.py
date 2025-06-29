@@ -24,8 +24,26 @@ import uuid
 dotenv_path = Path(__file__).parent.parent / '.env'
 
 app = Flask(__name__)
-# Simple and permissive CORS configuration
-CORS(app, origins="*")
+
+# Production-optimized CORS configuration  
+allowed_origins = [
+    "https://ecss-hunt.onrender.com",
+    "http://localhost:3000", 
+    "https://localhost:3000",
+    "https://ecss-hunt-frontend.vercel.app",  # Add Vercel if you deploy there
+    "https://ecss-hunt.vercel.app"
+]
+
+CORS(app, 
+     origins=allowed_origins,
+     methods=["GET", "POST", "OPTIONS"],
+     allow_headers=["Content-Type", "Authorization"],
+     supports_credentials=False,
+     max_age=86400)  # Cache CORS preflight for 24 hours
+
+# Performance optimizations
+app.config['JSON_SORT_KEYS'] = False
+app.config['JSONIFY_PRETTYPRINT_REGULAR'] = False
 
 # Handle preflight OPTIONS requests
 @app.route('/api/<path:path>', methods=['OPTIONS'])
@@ -59,17 +77,19 @@ def search():
     query = request.args.get('q', '')
     branch = request.args.get('branch', None)  # Optional branch filter
     page = int(request.args.get('page', 1))  # Page number (1-based)
-    limit = int(request.args.get('limit', 5))  # Results per page
+    limit = min(int(request.args.get('limit', 5)), 10)  # Cap at 10 results max
     compact = request.args.get('compact', 'true').lower() == 'true'  # Compact results
     
-    if not query.strip():
+    # Performance optimization: Early validation
+    if not query.strip() or len(query.strip()) < 2:
         return jsonify({
             'results': [],
             'total': 0,
             'query': query,
             'page': page,
-            'limit': limit
-        })
+            'limit': limit,
+            'message': 'Query too short' if len(query.strip()) < 2 else 'Empty query'
+                 })
     
     try:
         # Get Morphik client and graph manager
@@ -808,5 +828,40 @@ def health_check():
             'error': str(e)
         })
 
+# Production optimizations
+from flask import g
+import time
+
+@app.before_request
+def before_request():
+    g.start_time = time.time()
+
+@app.after_request  
+def after_request(response):
+    # Add performance headers
+    if hasattr(g, 'start_time'):
+        response.headers['X-Response-Time'] = f"{(time.time() - g.start_time) * 1000:.2f}ms"
+    
+    # Add caching headers for static content
+    if request.endpoint in ['search', 'search_sections', 'search_definitions']:
+        response.headers['Cache-Control'] = 'public, max-age=300'  # 5 minutes cache
+    
+    # Security headers
+    response.headers['X-Content-Type-Options'] = 'nosniff'
+    response.headers['X-Frame-Options'] = 'DENY'
+    
+    return response
+
 if __name__ == '__main__':
-    app.run(debug=True, host='0.0.0.0', port=5000) 
+    # Production-ready configuration
+    import os
+    debug_mode = os.getenv('FLASK_DEBUG', 'False').lower() == 'true'
+    port = int(os.getenv('PORT', 5000))
+    
+    app.run(
+        debug=debug_mode,
+        host='0.0.0.0', 
+        port=port,
+        threaded=True,  # Enable threading for better concurrency
+        use_reloader=debug_mode  # Only use reloader in debug mode
+    ) 
