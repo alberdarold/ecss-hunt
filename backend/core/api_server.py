@@ -220,39 +220,72 @@ def search():
                     'ecss_data': ecss_metadata
                 })
                 
-                # Get the actual chunk content - try multiple methods
+                # Get content - handle both text and image-based chunks properly
                 source_content = "No content available"
                 
                 try:
-                    # Method 1: Try to get text directly from source
-                    if hasattr(source, 'text') and source.text:
+                    # For image-based ingestion, prioritize extracted metadata content
+                    if hasattr(source, 'metadata') and source.metadata:
+                        metadata = source.metadata
+                        
+                        # Try to get meaningful content from extracted metadata
+                        content_parts = []
+                        
+                        # Extract requirement content if available
+                        if metadata.get('ecss_data', {}).get('requirement_type'):
+                            req_type = metadata['ecss_data']['requirement_type']
+                            if req_type:
+                                content_parts.append(f"🔹 **REQUIREMENT TYPE:** {req_type}")
+                        
+                        # Extract section information
+                        if metadata.get('ecss_data', {}).get('section_title'):
+                            section_title = metadata['ecss_data']['section_title']
+                            section_num = metadata.get('ecss_data', {}).get('section_number', '')
+                            if section_title:
+                                content_parts.append(f"📋 **SECTION:** {section_num} {section_title}")
+                        
+                        # Extract content summary if available
+                        if metadata.get('content_summary'):
+                            content_parts.append(f"📖 **SUMMARY:** {metadata['content_summary']}")
+                        
+                        # Extract content description
+                        if metadata.get('content_description'):
+                            content_parts.append(f"💡 **DESCRIPTION:** {metadata['content_description']}")
+                        
+                        # Extract key parameters
+                        if metadata.get('key_parameters'):
+                            params = metadata['key_parameters']
+                            if isinstance(params, list) and len(params) > 0:
+                                content_parts.append(f"⚙️ **KEY PARAMETERS:** {', '.join(params[:5])}")
+                        
+                        # Extract components
+                        if metadata.get('components'):
+                            components = metadata['components']
+                            if isinstance(components, list) and len(components) > 0:
+                                content_parts.append(f"🔧 **COMPONENTS:** {', '.join(components[:3])}")
+                        
+                        # Use the raw content field as fallback
+                        if metadata.get('content') and len(content_parts) == 0:
+                            raw_content = metadata['content']
+                            if len(raw_content) > 50:  # Only if substantial content
+                                content_parts.append(f"📄 **CONTENT:** {raw_content}")
+                        
+                        if content_parts:
+                            source_content = "\n".join(content_parts)
+                        else:
+                            # Last resort: use available metadata fields
+                            source_content = f"📄 Content from {doc_name}\n"
+                            if metadata.get('context'):
+                                source_content += f"🔍 **CONTEXT:** {metadata['context']}"
+                    
+                    # Fallback methods for text-based content
+                    elif hasattr(source, 'text') and source.text:
                         raw_content = source.text
                         source_content = process_engineering_content(raw_content, doc_metadata)
-                    # Method 2: Try to get content from source
                     elif hasattr(source, 'content') and source.content:
                         raw_content = source.content
                         source_content = process_engineering_content(raw_content, doc_metadata)
-                    # Method 3: Try to retrieve chunk by ID
-                    else:
-                        chunk_id = f"{doc_id}-{getattr(source, 'chunk_number', i)}"
-                        chunk = db.get_chunk(chunk_id)
-                        if chunk and hasattr(chunk, 'content'):
-                            raw_content = chunk.content
-                            source_content = process_engineering_content(raw_content, doc_metadata)
-                        elif chunk and hasattr(chunk, 'text'):
-                            raw_content = chunk.text
-                            source_content = process_engineering_content(raw_content, doc_metadata)
                     
-                    # If still no content, try retrieving chunks for the document
-                    if source_content == "No content available":
-                        chunks = db.retrieve_chunks(query, filters={'document_id': doc_id}, k=5)
-                        if chunks and len(chunks) > getattr(source, 'chunk_number', i):
-                            chunk_idx = getattr(source, 'chunk_number', i)
-                            if chunk_idx < len(chunks):
-                                raw_content = getattr(chunks[chunk_idx], 'content', '') or getattr(chunks[chunk_idx], 'text', '')
-                                if raw_content:
-                                    source_content = process_engineering_content(raw_content, doc_metadata)
-                                    
                 except Exception as e:
                     print(f"Error retrieving content for source {i}: {e}")
                     # Fallback: try to get some content from metadata
