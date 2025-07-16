@@ -115,13 +115,18 @@ def search():
             })
         
         # --- Use basic Morphik query instead of enhanced graph ---
-        print(f"Performing basic Morphik query for: '{query}'")
+        print(f"Performing engineer-focused ECSS query for: '{query}'")
+        
+        # Enhance query for better requirement discovery
+        enhanced_query = query
+        if not any(word in query.lower() for word in ['shall', 'should', 'requirement', 'must', 'may']):
+            enhanced_query = f"requirements for {query} shall should must"
         
         # Use basic query with ColPali support
         try:
             response = db.query(
-                query,
-                k=limit * 2,  # Get more results to filter
+                enhanced_query,
+                k=limit * 3,  # Get more results to filter for requirements
                 use_colpali=True if any(keyword in query.lower() for keyword in ['image', 'diagram', 'figure', 'chart', 'graph', 'table', 'visual', 'picture', 'photo']) else False
             )
             
@@ -139,7 +144,7 @@ def search():
             
             results = []
             
-            # Process each source
+            # Process each source with focus on engineering content
             for i, source in enumerate(sources):
                 doc_id = getattr(source, 'document_id', str(uuid.uuid4()))
                 doc_name = 'Unknown Document'
@@ -153,21 +158,30 @@ def search():
                     doc_name = getattr(document, 'filename', 'Unknown')
                     doc_metadata = getattr(document, 'metadata', {})
 
-                    # Determine source type based on content
-                    if 'table' in doc_metadata.get('title', '').lower():
-                        source_type = 'table'
-                        entity_type = 'Table'
-                    elif 'figure' in doc_metadata.get('title', '').lower():
-                        source_type = 'diagram'
-                        entity_type = 'Diagram'
-                    elif 'requirement' in doc_metadata.get('title', '').lower():
+                    # Enhanced source type detection for engineering content
+                    metadata_title = doc_metadata.get('title', '').lower()
+                    metadata_content = doc_metadata.get('content', '').lower()
+                    
+                    if any(word in metadata_title for word in ['requirement', 'shall', 'should', 'must']):
                         source_type = 'requirement'
                         entity_type = 'Requirement'
-                    elif 'section' in doc_metadata.get('title', '').lower():
+                    elif 'table' in metadata_title:
+                        source_type = 'table'
+                        entity_type = 'Table'
+                    elif any(word in metadata_title for word in ['figure', 'diagram', 'image']):
+                        source_type = 'diagram'
+                        entity_type = 'Diagram'
+                    elif any(word in metadata_title for word in ['section', 'clause']):
                         source_type = 'section'
                         entity_type = 'Section'
+                    elif any(word in metadata_title for word in ['definition', 'term']):
+                        source_type = 'definition'
+                        entity_type = 'Definition'
+                    elif any(word in metadata_title for word in ['annex', 'appendix']):
+                        source_type = 'annex'
+                        entity_type = 'Annex'
                     else:
-                        source_type = 'text_chunk'
+                        source_type = 'content'
                         entity_type = 'Content'
                         
                 except Exception as e:
@@ -179,6 +193,21 @@ def search():
                     if doc_branch and doc_branch != branch.upper():
                         continue
                 
+                # Extract ECSS-specific metadata
+                ecss_metadata = {
+                    'standard_id': doc_metadata.get('standard_id', ''),
+                    'section_number': doc_metadata.get('section_number', ''),
+                    'section_title': doc_metadata.get('section_title', ''),
+                    'requirement_type': doc_metadata.get('requirement_type', ''),
+                    'unique_id': doc_metadata.get('unique_id', ''),
+                    'cross_references': doc_metadata.get('cross_references', []),
+                    'verification_method': doc_metadata.get('verification_method', ''),
+                    'applicable_phases': doc_metadata.get('applicable_phases', []),
+                    'is_normative': doc_metadata.get('is_normative', False),
+                    'requirements_count': doc_metadata.get('requirements_count', 0),
+                    'recommendations_count': doc_metadata.get('recommendations_count', 0)
+                }
+                
                 # Combine metadata
                 final_metadata = doc_metadata.copy()
                 final_metadata.update({
@@ -187,37 +216,101 @@ def search():
                     'source_type': source_type,
                     'chunk_id': getattr(source, 'chunk_number', i),
                     'score': getattr(source, 'score', 0),
-                    'query_method': 'basic_morphik'
+                    'query_method': 'engineer_focused',
+                    'ecss_data': ecss_metadata
                 })
                 
-                # Get the chunk content
+                # Get the actual chunk content - try multiple methods
+                source_content = "No content available"
+                
                 try:
-                    chunk_id = f"{doc_id}-{getattr(source, 'chunk_number', i)}"
-                    chunk = db.get_chunk(chunk_id)
-                    source_content = getattr(chunk, 'content', 'No content available')
-                except:
-                    source_content = f"Content from {doc_name} (chunk {getattr(source, 'chunk_number', i)})"
+                    # Method 1: Try to get text directly from source
+                    if hasattr(source, 'text') and source.text:
+                        raw_content = source.text
+                        source_content = process_engineering_content(raw_content, doc_metadata)
+                    # Method 2: Try to get content from source
+                    elif hasattr(source, 'content') and source.content:
+                        raw_content = source.content
+                        source_content = process_engineering_content(raw_content, doc_metadata)
+                    # Method 3: Try to retrieve chunk by ID
+                    else:
+                        chunk_id = f"{doc_id}-{getattr(source, 'chunk_number', i)}"
+                        chunk = db.get_chunk(chunk_id)
+                        if chunk and hasattr(chunk, 'content'):
+                            raw_content = chunk.content
+                            source_content = process_engineering_content(raw_content, doc_metadata)
+                        elif chunk and hasattr(chunk, 'text'):
+                            raw_content = chunk.text
+                            source_content = process_engineering_content(raw_content, doc_metadata)
+                    
+                    # If still no content, try retrieving chunks for the document
+                    if source_content == "No content available":
+                        chunks = db.retrieve_chunks(query, filters={'document_id': doc_id}, k=5)
+                        if chunks and len(chunks) > getattr(source, 'chunk_number', i):
+                            chunk_idx = getattr(source, 'chunk_number', i)
+                            if chunk_idx < len(chunks):
+                                raw_content = getattr(chunks[chunk_idx], 'content', '') or getattr(chunks[chunk_idx], 'text', '')
+                                if raw_content:
+                                    source_content = process_engineering_content(raw_content, doc_metadata)
+                                    
+                except Exception as e:
+                    print(f"Error retrieving content for source {i}: {e}")
+                    # Fallback: try to get some content from metadata
+                    if doc_metadata.get('content'):
+                        source_content = doc_metadata['content'][:500] + "..."
+                    elif doc_metadata.get('statement'):
+                        source_content = f"**Requirement:** {doc_metadata['statement']}"
+                    else:
+                        source_content = f"Content from {doc_name} - Unable to retrieve full text. Document contains technical specifications and requirements."
                 
                 # Skip sources with no meaningful content
                 if not source_content or source_content.strip() == '':
                     continue
 
-                # Create content based on compact flag
+                # Enhanced content formatting for engineers
                 if compact:
-                    # Compact mode: just the source content without context
+                    # Compact mode: focus on requirements and key info
                     full_content = source_content
-                    # Limit content length for compact mode
-                    if len(full_content) > 500:
-                        # Try to cut at sentence boundary
-                        preview = full_content[:500]
-                        last_sentence = preview.rfind('. ')
-                        if last_sentence > 300:
-                            full_content = preview[:last_sentence + 1]
-                        else:
-                            full_content = preview + '...'
+                    if len(full_content) > 600:
+                        # Prioritize requirement statements
+                        lines = full_content.split('\n')
+                        important_lines = []
+                        other_lines = []
+                        
+                        for line in lines:
+                            if any(word in line.lower() for word in ['shall', 'should', 'must', 'requirement', 'r-']):
+                                important_lines.append(line)
+                            else:
+                                other_lines.append(line)
+                        
+                        # Include all important lines + some context
+                        preview_lines = important_lines[:3] + other_lines[:2]
+                        full_content = '\n'.join(preview_lines)
+                        if len('\n'.join(lines)) > len(full_content):
+                            full_content += '\n...'
                 else:
-                    # Full mode: enhanced content with formatting and context
-                    full_content = f"**{source_type.title()} from {doc_name}:**\n{source_content}\n\n**AI Summary:**\n{summary_content}"
+                    # Full mode: comprehensive engineering content
+                    engineering_context = []
+                    
+                    if ecss_metadata['standard_id']:
+                        engineering_context.append(f"**Standard:** {ecss_metadata['standard_id']}")
+                    
+                    if ecss_metadata['section_number'] and ecss_metadata['section_title']:
+                        engineering_context.append(f"**Section:** {ecss_metadata['section_number']} - {ecss_metadata['section_title']}")
+                    
+                    if ecss_metadata['requirement_type']:
+                        engineering_context.append(f"**Type:** {ecss_metadata['requirement_type']}")
+                    
+                    if ecss_metadata['verification_method']:
+                        engineering_context.append(f"**Verification:** {ecss_metadata['verification_method']}")
+                    
+                    if ecss_metadata['cross_references']:
+                        refs = ', '.join(ecss_metadata['cross_references'][:3])
+                        engineering_context.append(f"**References:** {refs}")
+                    
+                    context_str = '\n'.join(engineering_context)
+                    
+                    full_content = f"**{source_type.title()} from {doc_name}:**\n\n{context_str}\n\n**Content:**\n{source_content}\n\n**AI Analysis:**\n{summary_content}"
 
                 results.append({
                     'id': f"{doc_id}-{getattr(source, 'chunk_number', i)}", 
@@ -230,8 +323,15 @@ def search():
                 if len(results) >= limit:
                     break
         
-            # Sort results by score (highest first)
-            results.sort(key=lambda x: float(x.get('score', 0)), reverse=True)
+            # Sort results prioritizing requirements and higher scores
+            def sort_key(x):
+                score = float(x.get('score', 0))
+                # Boost requirement-type content
+                if x['metadata']['source_type'] in ['requirement', 'section', 'definition']:
+                    score += 1.0
+                return score
+                
+            results.sort(key=sort_key, reverse=True)
             
             # Apply pagination
             total_results = len(results)
@@ -250,9 +350,12 @@ def search():
                 'query': query,
                 'summary': summary_content if not compact else None,
                 'query_settings': {
-                    'method': 'basic_morphik',
+                    'method': 'engineer_focused',
                     'enhanced_graph': False,
-                    'use_colpali': True if any(keyword in query.lower() for keyword in ['image', 'diagram', 'figure', 'chart', 'graph', 'table', 'visual', 'picture', 'photo']) else False
+                    'query_enhancement': enhanced_query != query,
+                    'use_colpali': True if any(keyword in query.lower() for keyword in ['image', 'diagram', 'figure', 'chart', 'graph', 'table', 'visual', 'picture', 'photo']) else False,
+                    'prioritizes_requirements': True,
+                    'highlights_engineering_content': True
                 },
                 'pagination': {
                     'page': page,
@@ -804,6 +907,97 @@ def health_check():
 # Production optimizations
 from flask import g
 import time
+
+def process_engineering_content(content, metadata):
+    """
+    Process content to highlight engineering requirements and important information.
+    """
+    if not content:
+        return content
+    
+    # Clean up the content first
+    content = content.strip()
+    if len(content) < 10:  # Too short to be meaningful
+        return content
+    
+    lines = content.split('\n')
+    processed_lines = []
+    
+    for line in lines:
+        if not line.strip():  # Skip empty lines
+            processed_lines.append(line)
+            continue
+            
+        line_lower = line.lower().strip()
+        original_line = line.strip()
+        
+        # Skip very short lines
+        if len(line_lower) < 5:
+            processed_lines.append(line)
+            continue
+        
+        # Identify and highlight different types of content
+        formatted_line = original_line
+        
+        # 1. REQUIREMENTS (shall, should, must statements)
+        if any(pattern in line_lower for pattern in [
+            'shall', 'should', 'must', 'may not', 'cannot', 'will not',
+            'it is required', 'requirement', 'mandatory'
+        ]):
+            if not formatted_line.startswith('**'):
+                formatted_line = f"🔹 **REQUIREMENT:** {formatted_line}"
+        
+        # 2. ECSS REFERENCES and STANDARDS
+        elif any(pattern in line_lower for pattern in ['ecss-', 'iso ', 'iec ', 'ieee ']):
+            if not formatted_line.startswith('**'):
+                formatted_line = f"📋 **REFERENCE:** {formatted_line}"
+        
+        # 3. DEFINITIONS and TERMS
+        elif any(pattern in line_lower for pattern in [
+            'definition:', 'term:', 'means:', 'refers to:', 'is defined as'
+        ]):
+            if not formatted_line.startswith('**'):
+                formatted_line = f"📖 **DEFINITION:** {formatted_line}"
+        
+        # 4. NOTES and CLARIFICATIONS  
+        elif any(pattern in line_lower for pattern in ['note:', 'note ', 'example:', 'remark:']):
+            if not formatted_line.startswith('**'):
+                formatted_line = f"💡 **NOTE:** {formatted_line}"
+        
+        # 5. SECTION HEADERS and STRUCTURE
+        elif any(pattern in line_lower for pattern in [
+            'section', 'clause', 'annex', 'appendix', 'table', 'figure'
+        ]) and len(line_lower) < 100:  # Short lines likely to be headers
+            if not formatted_line.startswith('**'):
+                formatted_line = f"📂 **SECTION:** {formatted_line}"
+        
+        # 6. VERIFICATION and TESTING
+        elif any(pattern in line_lower for pattern in [
+            'verification', 'test', 'validation', 'compliance', 'audit'
+        ]):
+            if not formatted_line.startswith('**'):
+                formatted_line = f"✅ **VERIFICATION:** {formatted_line}"
+        
+        # 7. TECHNICAL SPECIFICATIONS
+        elif any(pattern in line_lower for pattern in [
+            'specification', 'parameter', 'criteria', 'threshold', 'limit'
+        ]):
+            if not formatted_line.startswith('**'):
+                formatted_line = f"⚙️ **SPECIFICATION:** {formatted_line}"
+        
+        processed_lines.append(formatted_line)
+    
+    # Join and clean up
+    result = '\n'.join(processed_lines)
+    
+    # Add summary if content is very long
+    if len(result) > 1000:
+        lines = result.split('\n')
+        important_lines = [line for line in lines if any(marker in line for marker in ['🔹', '📋', '📖', '✅', '⚙️'])]
+        if len(important_lines) > 3:
+            result = '\n'.join(important_lines[:5]) + '\n\n... (additional technical content available)'
+    
+    return result
 
 @app.before_request
 def before_request():
