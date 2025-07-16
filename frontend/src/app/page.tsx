@@ -386,94 +386,179 @@ export default function Home() {
             {results.map((result, index) => {
               const extResult = result as ExtendedSearchResult;
               const uniqueKey = result.id || `result-${index}`;
+              
+              // Extract ECSS metadata for better organization
+              const metadata = result.metadata as any;
+              const ecssData = metadata?.ecss_data || {};
+              const isRequirement = ecssData.requirement_type || metadata?.requirement_type;
+              const isNormative = ecssData.is_normative || metadata?.is_normative;
+              const sectionTitle = ecssData.section_title || metadata?.section_title;
+              const sectionNumber = ecssData.section_number || metadata?.section_number;
+              const verificationMethod = ecssData.verification_method || metadata?.verification_method;
+              
               return (
-                <div key={uniqueKey} className="bg-white rounded-lg shadow-sm border border-gray-200 hover:shadow-md transition-shadow p-4 mb-3">
-                    {/* Header with document info and score */}
-                    <div className="flex justify-between items-start mb-3">
-                      <div className="flex-1">
-                        <h3 className="text-lg font-semibold text-gray-800 mb-1 truncate">
-                          {result.metadata?.document_name && result.metadata.document_name !== 'Unknown Document' 
-                            ? result.metadata.document_name 
-                            : 'ECSS Document'}
-                        </h3>
-                        <div className="flex items-center gap-2 flex-wrap">
-                          {result.metadata?.entity_type && result.metadata.entity_type !== 'unknown' && (
-                            <span className="px-2 py-1 text-xs bg-blue-100 text-blue-700 rounded-full">
-                              {result.metadata.entity_type}
-                            </span>
-                          )}
-                          {result.metadata?.retrieval_method && result.metadata.retrieval_method !== 'unknown' && (
-                            <span className="px-2 py-1 text-xs bg-green-100 text-green-700 rounded-full">
-                              {result.metadata.retrieval_method}
-                            </span>
-                          )}
-                          {result.metadata?.visual_confidence && result.metadata.visual_confidence > 0 && (
-                            <span className="px-2 py-1 text-xs bg-purple-100 text-purple-700 rounded-full">
-                              Visual: {Math.round(result.metadata.visual_confidence * 100)}%
-                            </span>
-                          )}
-                          {result.metadata?.section && (
-                            <span className="px-2 py-1 text-xs bg-yellow-100 text-yellow-700 rounded-full">
-                              Section: {result.metadata.section}
-                            </span>
-                          )}
-                          {result.metadata?.page_number && (
-                            <span className="px-2 py-1 text-xs bg-gray-100 text-gray-700 rounded-full">
-                              P. {result.metadata.page_number}
-                            </span>
-                          )}
-                        </div>
+                <div key={uniqueKey} className="bg-white rounded-lg shadow-sm border border-gray-200 hover:shadow-md transition-shadow p-4 mb-4">
+                  {/* ENGINEER-FOCUSED HEADER */}
+                  <div className="flex justify-between items-start mb-3">
+                    <div className="flex-1">
+                      {/* Priority indicators for engineers */}
+                      <div className="flex items-center gap-2 mb-2">
+                        {isRequirement && (
+                          <span className="px-3 py-1 text-sm font-medium bg-red-100 text-red-800 rounded-full border border-red-200">
+                            🔹 REQUIREMENT
+                          </span>
+                        )}
+                        {isNormative && (
+                          <span className="px-3 py-1 text-sm font-medium bg-green-100 text-green-800 rounded-full border border-green-200">
+                            ✅ NORMATIVE
+                          </span>
+                        )}
+                        {verificationMethod && (
+                          <span className="px-3 py-1 text-sm font-medium bg-blue-100 text-blue-800 rounded-full border border-blue-200">
+                            🔬 {verificationMethod.toUpperCase()}
+                          </span>
+                        )}
                       </div>
-                      <div className="flex flex-col items-end ml-4">
-                        <div className="text-sm font-medium text-green-600 mb-1">
-                          {formatScore(result.score)}% Match
+                      
+                      {/* Document and section info */}
+                      <h3 className="text-lg font-semibold text-gray-800 mb-1">
+                        {result.metadata?.document_name && result.metadata.document_name !== 'Unknown Document' 
+                          ? result.metadata.document_name.replace('.pdf', '') 
+                          : 'ECSS Document'}
+                      </h3>
+                      
+                      {/* Section hierarchy for engineers */}
+                      {(sectionNumber || sectionTitle) && (
+                        <div className="flex items-center gap-2 text-sm text-gray-600 mb-2">
+                          <span className="font-medium">📋 Section:</span>
+                          {sectionNumber && <span className="bg-gray-100 px-2 py-1 rounded">{sectionNumber}</span>}
+                          {sectionTitle && <span>{sectionTitle}</span>}
                         </div>
-                        <div className="w-16 bg-gray-200 rounded-full h-2">
-                          <div 
-                            className="bg-green-500 h-2 rounded-full" 
-                            style={{ width: `${Math.min(formatScore(result.score), 100)}%` }}
-                          ></div>
-                        </div>
+                      )}
+                      
+                      {/* Technical metadata badges */}
+                      <div className="flex items-center gap-2 flex-wrap">
+                        {metadata?.branch && (
+                          <span className="px-2 py-1 text-xs bg-purple-100 text-purple-700 rounded">
+                            Branch: {metadata.branch}
+                          </span>
+                        )}
+                        {metadata?.discipline && (
+                          <span className="px-2 py-1 text-xs bg-indigo-100 text-indigo-700 rounded">
+                            {metadata.discipline}
+                          </span>
+                        )}
+                        {metadata?.content_summary && (
+                          <span className="px-2 py-1 text-xs bg-yellow-100 text-yellow-700 rounded">
+                            📖 Summary Available
+                          </span>
+                        )}
+                        {metadata?.key_parameters && Array.isArray(metadata.key_parameters) && metadata.key_parameters.length > 0 && (
+                          <span className="px-2 py-1 text-xs bg-green-100 text-green-700 rounded">
+                            ⚙️ {metadata.key_parameters.length} Parameters
+                          </span>
+                        )}
                       </div>
                     </div>
-                    {/* Content Preview */}
+                    
+                    {/* Match score */}
+                    <div className="flex flex-col items-end ml-4">
+                      <div className="text-sm font-medium text-green-600 mb-1">
+                        {formatScore(result.score)}% Match
+                      </div>
+                      <div className="w-16 bg-gray-200 rounded-full h-2">
+                        <div 
+                          className="bg-green-500 h-2 rounded-full" 
+                          style={{ width: `${Math.min(formatScore(result.score), 100)}%` }}
+                        ></div>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  {/* ENGINEER-FOCUSED CONTENT PREVIEW */}
+                  <div className="bg-gray-50 rounded-lg p-3 mb-3">
+                    {/* Content summary if available */}
+                    {metadata?.content_summary && (
+                      <div className="mb-3 p-3 bg-blue-50 rounded border-l-4 border-blue-400">
+                        <div className="text-sm font-medium text-blue-800 mb-1">📖 Content Summary</div>
+                        <div className="text-sm text-blue-700">{metadata.content_summary}</div>
+                      </div>
+                    )}
+                    
+                    {/* Content description if available */}
+                    {metadata?.content_description && metadata.content_description !== metadata?.content_summary && (
+                      <div className="mb-3 p-3 bg-green-50 rounded border-l-4 border-green-400">
+                        <div className="text-sm font-medium text-green-800 mb-1">💡 Description</div>
+                        <div className="text-sm text-green-700">{metadata.content_description}</div>
+                      </div>
+                    )}
+                    
+                    {/* Key parameters for engineers */}
+                    {metadata?.key_parameters && Array.isArray(metadata.key_parameters) && metadata.key_parameters.length > 0 && (
+                      <div className="mb-3 p-3 bg-yellow-50 rounded border-l-4 border-yellow-400">
+                        <div className="text-sm font-medium text-yellow-800 mb-2">⚙️ Key Parameters</div>
+                        <div className="flex flex-wrap gap-1">
+                                                     {metadata.key_parameters.slice(0, 6).map((param: string, i: number) => (
+                             <span key={i} className="text-xs bg-yellow-200 text-yellow-800 px-2 py-1 rounded">
+                               {param}
+                             </span>
+                           ))}
+                          {metadata.key_parameters.length > 6 && (
+                            <span className="text-xs text-yellow-600">+{metadata.key_parameters.length - 6} more</span>
+                          )}
+                        </div>
+                      </div>
+                    )}
+                    
+                    {/* Main content */}
                     <div className="prose prose-sm max-w-none text-gray-700 leading-relaxed">
                       <ReactMarkdown>
                         {expandedContent.has(index) ? result.content : getContentPreview(result.content)}
                       </ReactMarkdown>
                     </div>
-                    
-                    {/* Action buttons */}
-                    <div className="flex items-center gap-2 mt-4 pt-3 border-t border-gray-100">
-                      {result.content.length > 250 && (
-                        <button
-                          className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 rounded-lg transition-all duration-200 shadow-sm hover:shadow-md"
-                          onClick={() => toggleContentExpansion(index)}
-                        >
-                          <span className="text-base">{expandedContent.has(index) ? '📖' : '📄'}</span>
-                          {expandedContent.has(index) ? 'Show Less' : 'Read Full Content'}
-                        </button>
-                      )}
-                      
-                      {/* ECSS metadata expansion */}
+                  </div>
+                  
+                  {/* ENGINEER-FOCUSED ACTION BUTTONS */}
+                  <div className="flex items-center gap-2 pt-3 border-t border-gray-100">
+                    {/* Read more button */}
+                    {result.content.length > 250 && (
                       <button
-                        className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-purple-700 bg-purple-100 hover:bg-purple-200 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 rounded-lg transition-all duration-200 shadow-sm hover:shadow-md"
-                        onClick={() => setExpandedResult(expandedResult === index ? null : index)}
+                        className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 rounded-lg transition-all duration-200 shadow-sm hover:shadow-md"
+                        onClick={() => toggleContentExpansion(index)}
                       >
-                        <span className="text-base">🔍</span>
-                        {expandedResult === index ? 'Hide Technical Details' : 'Show Technical Details'}
+                        <span className="text-base">{expandedContent.has(index) ? '📖' : '📄'}</span>
+                        {expandedContent.has(index) ? 'Show Less' : 'Read Full Content'}
                       </button>
-                      
-                      {/* Quick info */}
-                      <div className="ml-auto text-xs text-gray-500">
-                        {result.metadata?.branch && (
-                          <span className="mr-2">Branch: {result.metadata.branch}</span>
-                        )}
-                        {result.metadata?.discipline && (
-                          <span>Discipline: {result.metadata.discipline}</span>
-                        )}
-                      </div>
+                    )}
+                    
+                    {/* Technical details button */}
+                    <button
+                      className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-purple-700 bg-purple-100 hover:bg-purple-200 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 rounded-lg transition-all duration-200 shadow-sm hover:shadow-md"
+                      onClick={() => setExpandedResult(expandedResult === index ? null : index)}
+                    >
+                      <span className="text-base">🔧</span>
+                      {expandedResult === index ? 'Hide Technical Details' : 'Show Technical Details'}
+                    </button>
+                    
+                    {/* Quick reference info */}
+                    <div className="ml-auto flex items-center gap-4 text-xs text-gray-500">
+                      {metadata?.date && (
+                        <span className="flex items-center gap-1">
+                          📅 {metadata.date}
+                        </span>
+                      )}
+                      {ecssData.requirements_count > 0 && (
+                        <span className="flex items-center gap-1">
+                          📋 {ecssData.requirements_count} Req.
+                        </span>
+                      )}
+                      {metadata?.page_number && (
+                        <span className="flex items-center gap-1">
+                          📄 P.{metadata.page_number}
+                        </span>
+                      )}
                     </div>
+                  </div>
                     
                     {expandedResult === index && (
                       <div className="mt-4 border-t pt-4 bg-gray-50 rounded-lg p-4">
