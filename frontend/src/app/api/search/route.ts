@@ -140,14 +140,14 @@ export async function GET(request: NextRequest) {
     if (revision) {
       finalResults = finalResults.filter((r: SearchResult) => r.metadata.revision === revision);
     }
-    
+
     return NextResponse.json({
       results: finalResults,
       total: finalResults.length,
       query: query
     });
     
-  } catch (error) {
+      } catch (error) {
     console.error('Search error:', error);
     
     // Return mock data on error

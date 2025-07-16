@@ -136,8 +136,8 @@ export default function Home() {
       if (filters.discipline) params.append('discipline', filters.discipline);
       if (filters.revision) params.append('revision', filters.revision);
 
-      // Call Flask backend using environment variable or Render URL
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || (process.env.NODE_ENV === 'development' ? 'http://localhost:5000' : 'https://ecss-hunt.onrender.com');
+      // Call Flask backend directly 
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'https://ecss-hunt.onrender.com';
       const response = await fetch(`${apiUrl}/api/search?${params.toString()}`);
 
       if (!response.ok) {

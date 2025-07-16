@@ -26,20 +26,32 @@ dotenv_path = Path(__file__).parent.parent / '.env'
 app = Flask(__name__)
 
 # Production-optimized CORS configuration  
+# Allow local development IPs and production domains
 allowed_origins = [
     "https://ecss-hunt.onrender.com",
     "http://localhost:3000", 
     "https://localhost:3000",
+    "http://127.0.0.1:3000",
+    "http://192.168.1.6:3000",  # Your local IP
     "https://ecss-hunt-frontend.vercel.app",  # Add Vercel if you deploy there
     "https://ecss-hunt.vercel.app"
 ]
 
-CORS(app, 
-     origins=allowed_origins,
-     methods=["GET", "POST", "OPTIONS"],
-     allow_headers=["Content-Type", "Authorization"],
-     supports_credentials=False,
-     max_age=86400)  # Cache CORS preflight for 24 hours
+# For development, be more permissive with local IPs
+import os
+if os.getenv('FLASK_DEBUG', 'False').lower() == 'true':
+    # In development, allow any local IP
+    CORS(app, origins="*")
+else:
+    # In production, use specific origins
+    CORS(app, 
+         origins=allowed_origins,
+         methods=["GET", "POST", "OPTIONS"],
+         allow_headers=["Content-Type", "Authorization"],
+         supports_credentials=False,
+         max_age=86400)  # Cache CORS preflight for 24 hours
+
+print(f"🌐 CORS configured for origins: {allowed_origins if not os.getenv('FLASK_DEBUG', 'False').lower() == 'true' else 'ALL (debug mode)'}")
 
 # Performance optimizations
 app.config['JSON_SORT_KEYS'] = False
@@ -73,7 +85,7 @@ def get_morphik_client():
 
 @app.route('/api/search', methods=['GET'])
 def search():
-    """Search ECSS documents using optimized graph strategy with adaptive settings."""
+    """Search ECSS documents using basic Morphik query (enhanced graph disabled due to issues)."""
     query = request.args.get('q', '')
     branch = request.args.get('branch', None)  # Optional branch filter
     page = int(request.args.get('page', 1))  # Page number (1-based)
@@ -92,9 +104,9 @@ def search():
                  })
     
     try:
-        # Get Morphik client and graph manager
+        # Get Morphik client
         db, graph_manager = get_morphik_client()
-        if not db or not graph_manager:
+        if not db:
             return jsonify({
                 'results': [],
                 'total': 0,
@@ -102,84 +114,37 @@ def search():
                 'query': query
             })
         
-        # --- Use optimized query with adaptive settings ---
-        print(f"Performing optimized graph query for: '{query}' (branch: {branch})")
+        # --- Use basic Morphik query instead of enhanced graph ---
+        print(f"Performing basic Morphik query for: '{query}'")
         
-        # Use the optimized graph manager with adaptive settings
-        response_data = graph_manager.query_with_adaptive_settings(query, branch)
-        
-        # Add ColPali support for visual content queries
-        # Check if query might benefit from visual understanding
-        visual_keywords = ['image', 'diagram', 'figure', 'chart', 'graph', 'table', 'visual', 'picture', 'photo']
-        is_visual_query = any(keyword in query.lower() for keyword in visual_keywords)
-        
-        if is_visual_query:
-            print(f"🔍 Detected visual query, using ColPali for enhanced retrieval")
-            # For visual queries, we might want to also do a ColPali-based search
-            try:
-                colpali_response = db.query(
-                    query,
-                    use_colpali=True,  # Enable ColPali for visual understanding
-                    k=5  # Limit results for ColPali
-                )
-                
-                # Merge ColPali results with graph results if available
-                if colpali_response and colpali_response.sources:
-                    print(f"📸 ColPali found {len(colpali_response.sources)} visual results")
-                    # Add ColPali sources to the response
-                    if 'sources' not in response_data:
-                        response_data['sources'] = []
-                    response_data['sources'].extend(colpali_response.sources)
-                    
-            except Exception as e:
-                print(f"⚠ ColPali query failed: {e}")
-        
-        if 'error' in response_data:
-            return jsonify({
-                'results': [],
-                'total': 0,
-                'error': response_data['error'],
-                'query': query
-            })
-        
-        # Extract data from response
-        summary_content = response_data.get('completion', '')
-        sources = response_data.get('sources', [])
-        query_settings = response_data.get('query_settings', {})
-        
-        results = []
-        
-        # Guard against empty responses
-        if not summary_content:
-            print("Query returned no completion. Sending empty results.")
-            return jsonify({
-                'results': [],
-                'total': 0,
-                'query': query,
-                'query_settings': query_settings
-            })
-
-        # Process sources if available
-        if not sources:
-            print("Query returned a completion but no sources. Sending summary as single result.")
-            results.append({
-                'id': str(uuid.uuid4()),
-                'content': summary_content,
-                'score': 1.0,
-                'metadata': {
-                    'document_name': 'Knowledge Graph Summary',
-                    'entity_type': 'summary',
-                    'source_type': 'graph_completion',
-                    'query_settings': query_settings
-                }
-            })
-        else:
-            # Process each source with enhanced metadata
+        # Use basic query with ColPali support
+        try:
+            response = db.query(
+                query,
+                k=limit * 2,  # Get more results to filter
+                use_colpali=True if any(keyword in query.lower() for keyword in ['image', 'diagram', 'figure', 'chart', 'graph', 'table', 'visual', 'picture', 'photo']) else False
+            )
+            
+            if not response or not response.sources:
+                return jsonify({
+                    'results': [],
+                    'total': 0,
+                    'query': query,
+                    'message': 'No results found'
+                })
+            
+            # Extract data from response
+            summary_content = getattr(response, 'completion', '')
+            sources = getattr(response, 'sources', [])
+            
+            results = []
+            
+            # Process each source
             for i, source in enumerate(sources):
                 doc_id = getattr(source, 'document_id', str(uuid.uuid4()))
                 doc_name = 'Unknown Document'
                 doc_metadata = {}
-                entity_type = 'unknown'
+                entity_type = 'text_chunk'
                 source_type = 'text_chunk'
 
                 try:
@@ -188,46 +153,50 @@ def search():
                     doc_name = getattr(document, 'filename', 'Unknown')
                     doc_metadata = getattr(document, 'metadata', {})
 
-                    # Check if this source has entity information
-                    if hasattr(source, 'entity_type'):
-                        entity_type = source.entity_type
-                    elif hasattr(source, 'type'):
-                        entity_type = source.type
-
-                    # Determine source type based on content and entity type
-                    source_text = getattr(source, 'text', '')
-                    if entity_type == 'Section':
-                        source_type = 'section'
-                    elif entity_type == 'Definition':
-                        source_type = 'definition'
-                    elif entity_type == 'Table':
+                    # Determine source type based on content
+                    if 'table' in doc_metadata.get('title', '').lower():
                         source_type = 'table'
-                    elif entity_type == 'Requirement':
-                        source_type = 'requirement'
-                    elif entity_type == 'Diagram':
+                        entity_type = 'Table'
+                    elif 'figure' in doc_metadata.get('title', '').lower():
                         source_type = 'diagram'
-                    elif 'figure' in source_text.lower() or 'diagram' in source_text.lower():
-                        source_type = 'diagram'
-                    elif any(keyword in source_text.lower() for keyword in ['shall', 'should', 'may', 'can']):
+                        entity_type = 'Diagram'
+                    elif 'requirement' in doc_metadata.get('title', '').lower():
                         source_type = 'requirement'
-                    elif 'ECSS-' in source_text:
-                        source_type = 'standard'
+                        entity_type = 'Requirement'
+                    elif 'section' in doc_metadata.get('title', '').lower():
+                        source_type = 'section'
+                        entity_type = 'Section'
+                    else:
+                        source_type = 'text_chunk'
+                        entity_type = 'Content'
+                        
                 except Exception as e:
                     print(f"Warning: Could not fetch document {doc_id} for source. {e}")
             
-                # Combine metadata and add the source's text chunk as content
+                # Apply branch filter if specified
+                if branch:
+                    doc_branch = doc_metadata.get('branch', '').upper()
+                    if doc_branch and doc_branch != branch.upper():
+                        continue
+                
+                # Combine metadata
                 final_metadata = doc_metadata.copy()
                 final_metadata.update({
                     'document_name': doc_name,
                     'entity_type': entity_type,
                     'source_type': source_type,
-                    'chunk_id': getattr(source, 'chunk_id', f'chunk_{i}'),
+                    'chunk_id': getattr(source, 'chunk_number', i),
                     'score': getattr(source, 'score', 0),
-                    'query_settings': query_settings
+                    'query_method': 'basic_morphik'
                 })
                 
-                # The 'text' of the source is the specific chunk of text that contributed to the answer
-                source_content = getattr(source, 'text', '')
+                # Get the chunk content
+                try:
+                    chunk_id = f"{doc_id}-{getattr(source, 'chunk_number', i)}"
+                    chunk = db.get_chunk(chunk_id)
+                    source_content = getattr(chunk, 'content', 'No content available')
+                except:
+                    source_content = f"Content from {doc_name} (chunk {getattr(source, 'chunk_number', i)})"
                 
                 # Skip sources with no meaningful content
                 if not source_content or source_content.strip() == '':
@@ -248,57 +217,61 @@ def search():
                             full_content = preview + '...'
                 else:
                     # Full mode: enhanced content with formatting and context
-                    if source_type == 'section':
-                        full_content = f"**Section from {doc_name}:**\n{source_content}\n\n**Context:**\n{summary_content}"
-                    elif source_type == 'definition':
-                        full_content = f"**Definition from {doc_name}:**\n{source_content}\n\n**Context:**\n{summary_content}"
-                    elif source_type == 'table':
-                        full_content = f"**Table from {doc_name}:**\n{source_content}\n\n**Context:**\n{summary_content}"
-                    elif source_type == 'requirement':
-                        full_content = f"**Requirement from {doc_name}:**\n{source_content}\n\n**Context:**\n{summary_content}"
-                    elif source_type == 'diagram':
-                        full_content = f"**Diagram/Image from {doc_name}:**\n{source_content}\n\n**Context:**\n{summary_content}"
-                    elif source_type == 'standard':
-                        full_content = f"**Standard Reference from {doc_name}:**\n{source_content}\n\n**Context:**\n{summary_content}"
-                    else:
-                        full_content = f"**Evidence from {doc_name}:**\n{source_content}\n\n**Context:**\n{summary_content}"
+                    full_content = f"**{source_type.title()} from {doc_name}:**\n{source_content}\n\n**AI Summary:**\n{summary_content}"
 
                 results.append({
-                    'id': f"{doc_id}-{getattr(source, 'chunk_id', i)}", # Create a more unique ID for React keys
+                    'id': f"{doc_id}-{getattr(source, 'chunk_number', i)}", 
                     'content': full_content,
                     'score': getattr(source, 'score', 0),
                     'metadata': final_metadata
                 })
+                
+                # Stop if we have enough results
+                if len(results) >= limit:
+                    break
         
-        # Sort results by score (highest first) - ensure proper ordering
-        results.sort(key=lambda x: float(x.get('score', 0)), reverse=True)
-        
-        # Apply pagination
-        total_results = len(results)
-        start_idx = (page - 1) * limit
-        end_idx = start_idx + limit
-        paginated_results = results[start_idx:end_idx]
-        
-        # Calculate pagination info
-        total_pages = (total_results + limit - 1) // limit  # Ceiling division
-        has_next = page < total_pages
-        has_prev = page > 1
-        
-        return jsonify({
-            'results': paginated_results,
-            'total': total_results,
-            'query': query,
-            'summary': summary_content if not compact else None,  # Only include summary in non-compact mode
-            'query_settings': query_settings,
-            'pagination': {
-                'page': page,
-                'limit': limit,
-                'total_pages': total_pages,
-                'has_next': has_next,
-                'has_prev': has_prev
-            },
-            'compact': compact
-        })
+            # Sort results by score (highest first)
+            results.sort(key=lambda x: float(x.get('score', 0)), reverse=True)
+            
+            # Apply pagination
+            total_results = len(results)
+            start_idx = (page - 1) * limit
+            end_idx = start_idx + limit
+            paginated_results = results[start_idx:end_idx]
+            
+            # Calculate pagination info
+            total_pages = (total_results + limit - 1) // limit  # Ceiling division
+            has_next = page < total_pages
+            has_prev = page > 1
+            
+            return jsonify({
+                'results': paginated_results,
+                'total': total_results,
+                'query': query,
+                'summary': summary_content if not compact else None,
+                'query_settings': {
+                    'method': 'basic_morphik',
+                    'enhanced_graph': False,
+                    'use_colpali': True if any(keyword in query.lower() for keyword in ['image', 'diagram', 'figure', 'chart', 'graph', 'table', 'visual', 'picture', 'photo']) else False
+                },
+                'pagination': {
+                    'page': page,
+                    'limit': limit,
+                    'total_pages': total_pages,
+                    'has_next': has_next,
+                    'has_prev': has_prev
+                },
+                'compact': compact
+            })
+            
+        except Exception as e:
+            print(f"Basic Morphik query failed: {e}")
+            return jsonify({
+                'results': [],
+                'total': 0,
+                'error': f'Search failed: {str(e)}',
+                'query': query
+            })
         
     except Exception as e:
         print(f"Search error: {e}")
