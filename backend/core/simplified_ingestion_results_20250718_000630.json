@@ -1,0 +1,33 @@
+{
+  "total_documents": 1,
+  "successful_ingestions": 1,
+  "failed_ingestions": 0,
+  "total_time": 105.76,
+  "average_time_per_doc": 105.76,
+  "success_rate": 100.0,
+  "failed_docs": [],
+  "selected_files": [
+    "ECSS-M-70A(19April1996).pdf"
+  ],
+  "cost_info": {
+    "file_count": 1,
+    "total_size_mb": 0.13,
+    "estimated_pages": 0,
+    "cost_note": "Each ingestion counts toward your Morphik plan limits",
+    "recommendation": "Start with 1-2 documents to test quality before batch processing"
+  },
+  "ingested_docs": [
+    {
+      "file": "..\\..\\ECSS Published Standards\\1-Active Standards\\ECSS-M-70A(19April1996).pdf",
+      "external_id": "ECSS-M-70A(19April1996).pdf",
+      "info": {
+        "source": "chunks",
+        "summary": "",
+        "chunk_count": 9,
+        "visual_elements": 0
+      },
+      "processing_time": 91.83306193351746,
+      "method_used": "simplified_rules + ColPali (visual processing)"
+    }
+  ]
+}

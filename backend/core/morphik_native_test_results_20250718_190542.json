@@ -1,0 +1,8 @@
+{
+  "timestamp": "20250718_190542",
+  "morphik_config_check": true,
+  "visual_processing_test": true,
+  "ingestion_test": false,
+  "native_capabilities": true,
+  "external_dependencies": false
+}

@@ -1,0 +1,25 @@
+{
+  "total_documents": 1,
+  "successful_ingestions": 0,
+  "failed_ingestions": 1,
+  "total_time": 59.47,
+  "average_time_per_doc": 59.47,
+  "success_rate": 0.0,
+  "failed_docs": [
+    {
+      "file": "..\\..\\ECSS Published Standards\\1-Active Standards\\ECSS-M-70A(19April1996).pdf",
+      "error": "Poor quality extraction"
+    }
+  ],
+  "selected_files": [
+    "ECSS-M-70A(19April1996).pdf"
+  ],
+  "cost_info": {
+    "file_count": 1,
+    "total_size_mb": 0.13,
+    "estimated_pages": 0,
+    "cost_note": "Each ingestion counts toward your Morphik plan limits",
+    "recommendation": "Start with 1-2 documents to test quality before batch processing"
+  },
+  "ingested_docs": []
+}

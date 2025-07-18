@@ -1,0 +1,338 @@
+{
+  "timestamp": "20250718_192600",
+  "visual_analysis": {
+    "method": "retrieve_chunks",
+    "search_term": "ECSS",
+    "total_chunks": 5,
+    "visual_elements": [
+      {
+        "index": 0,
+        "chunk_type": "<class 'morphik._internal.FinalChunkResult'>",
+        "document_id": "cd3da5f4-6441-4df8-8213-6bf2ee3a6621",
+        "chunk_number": 1,
+        "score": 12.887677192687988,
+        "content_type": "visual_pil_image",
+        "image_type": "PngImageFile",
+        "image_size": [
+          1653,
+          2339
+        ],
+        "image_mode": "RGB",
+        "description": "PIL Image: PngImageFile",
+        "metadata": {
+          "external_id": "cd3da5f4-6441-4df8-8213-6bf2ee3a6621",
+          "is_image": true
+        },
+        "confirmed_image": true
+      },
+      {
+        "index": 1,
+        "chunk_type": "<class 'morphik._internal.FinalChunkResult'>",
+        "document_id": "cd3da5f4-6441-4df8-8213-6bf2ee3a6621",
+        "chunk_number": 0,
+        "score": 12.815369606018066,
+        "content_type": "visual_pil_image",
+        "image_type": "PngImageFile",
+        "image_size": [
+          1653,
+          2339
+        ],
+        "image_mode": "RGB",
+        "description": "PIL Image: PngImageFile",
+        "metadata": {
+          "external_id": "cd3da5f4-6441-4df8-8213-6bf2ee3a6621",
+          "is_image": true
+        },
+        "confirmed_image": true
+      },
+      {
+        "index": 2,
+        "chunk_type": "<class 'morphik._internal.FinalChunkResult'>",
+        "document_id": "cd3da5f4-6441-4df8-8213-6bf2ee3a6621",
+        "chunk_number": 2,
+        "score": 12.783214569091797,
+        "content_type": "visual_pil_image",
+        "image_type": "PngImageFile",
+        "image_size": [
+          1653,
+          2339
+        ],
+        "image_mode": "RGB",
+        "description": "PIL Image: PngImageFile",
+        "metadata": {
+          "external_id": "cd3da5f4-6441-4df8-8213-6bf2ee3a6621",
+          "is_image": true
+        },
+        "confirmed_image": true
+      },
+      {
+        "index": 3,
+        "chunk_type": "<class 'morphik._internal.FinalChunkResult'>",
+        "document_id": "cd3da5f4-6441-4df8-8213-6bf2ee3a6621",
+        "chunk_number": 10,
+        "score": 12.730791091918945,
+        "content_type": "visual_pil_image",
+        "image_type": "PngImageFile",
+        "image_size": [
+          1653,
+          2339
+        ],
+        "image_mode": "RGB",
+        "description": "PIL Image: PngImageFile",
+        "metadata": {
+          "external_id": "cd3da5f4-6441-4df8-8213-6bf2ee3a6621",
+          "is_image": true
+        },
+        "confirmed_image": true
+      }
+    ],
+    "text_elements": [
+      {
+        "index": 4,
+        "chunk_type": "<class 'morphik._internal.FinalChunkResult'>",
+        "document_id": "cd3da5f4-6441-4df8-8213-6bf2ee3a6621",
+        "chunk_number": 0,
+        "score": 0.729352242629297,
+        "content_type": "text",
+        "text_length": 1562,
+        "text_preview": "**When to Use This Standard:**\n- Applicable throughout all project life cycle phases, starting early to establish logistic support management.\n- Relevant for all types of space missions and systems re..."
+      }
+    ],
+    "processing_time": 1752859447.2453609
+  },
+  "search_results": [
+    {
+      "index": 0,
+      "query": "ECSS requirements",
+      "relevance_score": 12.804342269897461,
+      "document_id": "cd3da5f4-6441-4df8-8213-6bf2ee3a6621",
+      "chunk_number": 34,
+      "source_type": "<class 'morphik.models.ChunkSource'>",
+      "content_found": true,
+      "content_type": "visual",
+      "text": "[Visual Content] PIL Image: PngImageFile",
+      "summary": "Visual element processed by ColPali: PngImageFile size (1653, 2339)",
+      "visual_info": {
+        "type": "PngImageFile",
+        "size": [
+          1653,
+          2339
+        ],
+        "mode": "RGB",
+        "processed_by": "ColPali"
+      },
+      "metadata": {
+        "external_id": "cd3da5f4-6441-4df8-8213-6bf2ee3a6621",
+        "is_image": true
+      }
+    },
+    {
+      "index": 1,
+      "query": "ECSS requirements",
+      "relevance_score": 12.665525436401367,
+      "document_id": "cd3da5f4-6441-4df8-8213-6bf2ee3a6621",
+      "chunk_number": 2,
+      "source_type": "<class 'morphik.models.ChunkSource'>",
+      "content_found": true,
+      "content_type": "visual",
+      "text": "[Visual Content] PIL Image: PngImageFile",
+      "summary": "Visual element processed by ColPali: PngImageFile size (1653, 2339)",
+      "visual_info": {
+        "type": "PngImageFile",
+        "size": [
+          1653,
+          2339
+        ],
+        "mode": "RGB",
+        "processed_by": "ColPali"
+      },
+      "metadata": {
+        "external_id": "cd3da5f4-6441-4df8-8213-6bf2ee3a6621",
+        "is_image": true
+      }
+    },
+    {
+      "index": 2,
+      "query": "ECSS requirements",
+      "relevance_score": 12.579021453857422,
+      "document_id": "cd3da5f4-6441-4df8-8213-6bf2ee3a6621",
+      "chunk_number": 8,
+      "source_type": "<class 'morphik.models.ChunkSource'>",
+      "content_found": true,
+      "content_type": "visual",
+      "text": "[Visual Content] PIL Image: PngImageFile",
+      "summary": "Visual element processed by ColPali: PngImageFile size (1653, 2339)",
+      "visual_info": {
+        "type": "PngImageFile",
+        "size": [
+          1653,
+          2339
+        ],
+        "mode": "RGB",
+        "processed_by": "ColPali"
+      },
+      "metadata": {
+        "external_id": "cd3da5f4-6441-4df8-8213-6bf2ee3a6621",
+        "is_image": true
+      }
+    },
+    {
+      "index": 3,
+      "query": "ECSS requirements",
+      "relevance_score": 0.7571230224224321,
+      "document_id": "cd3da5f4-6441-4df8-8213-6bf2ee3a6621",
+      "chunk_number": 0,
+      "source_type": "<class 'morphik.models.ChunkSource'>",
+      "content_found": true,
+      "content_type": "text",
+      "text": "**When to Use This Standard:**\n- Applicable throughout all project life cycle phases, starting early to establish logistic support management.\n- Relevant for all types of space missions and systems requiring Integrated Logistic Support (ILS).\n- Use cases include planning, controlling, and managing logistic activities such as system analyses, support element development, and information integration.\n\n**Key Takeaways:**\n- Engineers must ensure logistic activities comply with management requirements covering system analyses, risk assessment, support element development (spares, training, software), and integrated information management.\n- Common challenges include maintaining coordination between Supported and Support Systems and keeping logistic plans up-to-date with design or operational changes.\n- Critical success factors involve early collaboration among stakeholders, regular monitoring, traceability, and adherence to risk and cost management principles.\n\n**Integration with Other Standards:**\n- ECSSM70A is part of the broader ECSS framework and integrates with management, engineering, risk management, quality assurance, and project documentation standards.\n- Cross-references to other ECSS standards and relevant external publications must be consulted for comprehensive logistic support compliance.\n- Typical compliance workflows require systematic reporting, validation through studies, and alignment with project schedules and other ECSS documents, ensuring reliance on integrated project-wide documentation and coordinated risk mitigation.",
+      "summary": "**When to Use This Standard:**\n- Applicable throughout all project life cycle phases, starting early to establish logistic support management.\n- Relevant for all types of space missions and systems re..."
+    }
+  ],
+  "visual_query_result": {
+    "question": "What are the main requirements in the ECSS document?",
+    "response": "",
+    "sources_count": 5,
+    "visual_sources": [
+      {
+        "document_id": "cd3da5f4-6441-4df8-8213-6bf2ee3a6621",
+        "chunk_number": 2,
+        "score": 19.199413299560547,
+        "content_found": true,
+        "type": "visual",
+        "description": "PIL Image: PngImageFile",
+        "size": [
+          1653,
+          2339
+        ]
+      },
+      {
+        "document_id": "cd3da5f4-6441-4df8-8213-6bf2ee3a6621",
+        "chunk_number": 8,
+        "score": 19.05508041381836,
+        "content_found": true,
+        "type": "visual",
+        "description": "PIL Image: PngImageFile",
+        "size": [
+          1653,
+          2339
+        ]
+      },
+      {
+        "document_id": "cd3da5f4-6441-4df8-8213-6bf2ee3a6621",
+        "chunk_number": 6,
+        "score": 18.843181610107422,
+        "content_found": true,
+        "type": "visual",
+        "description": "PIL Image: PngImageFile",
+        "size": [
+          1653,
+          2339
+        ]
+      },
+      {
+        "document_id": "cd3da5f4-6441-4df8-8213-6bf2ee3a6621",
+        "chunk_number": 5,
+        "score": 18.477262496948242,
+        "content_found": true,
+        "type": "visual",
+        "description": "PIL Image: PngImageFile",
+        "size": [
+          1653,
+          2339
+        ]
+      }
+    ],
+    "text_sources": [
+      {
+        "document_id": "cd3da5f4-6441-4df8-8213-6bf2ee3a6621",
+        "chunk_number": 0,
+        "score": 0.7841480631651823,
+        "content_found": true,
+        "type": "text",
+        "preview": "**When to Use This Standard:**\n- Applicable throughout all project life cycle phases, starting early"
+      }
+    ],
+    "metadata_sources": [],
+    "timestamp": "2025-07-18T19:24:36.452556"
+  },
+  "comprehensive_summary": {
+    "test_terms": [
+      "ECSS",
+      "diagram",
+      "table",
+      "figure",
+      "requirement"
+    ],
+    "chunk_analysis": {
+      "ECSS": {
+        "term": "ECSS",
+        "total_chunks": 5,
+        "visual_chunks": 4,
+        "text_chunks": 1,
+        "other_chunks": 0
+      },
+      "diagram": {
+        "term": "diagram",
+        "total_chunks": 5,
+        "visual_chunks": 4,
+        "text_chunks": 1,
+        "other_chunks": 0
+      },
+      "table": {
+        "term": "table",
+        "total_chunks": 5,
+        "visual_chunks": 4,
+        "text_chunks": 1,
+        "other_chunks": 0
+      },
+      "figure": {
+        "term": "figure",
+        "total_chunks": 5,
+        "visual_chunks": 4,
+        "text_chunks": 1,
+        "other_chunks": 0
+      },
+      "requirement": {
+        "term": "requirement",
+        "total_chunks": 5,
+        "visual_chunks": 4,
+        "text_chunks": 1,
+        "other_chunks": 0
+      }
+    },
+    "query_analysis": {
+      "ECSS": {
+        "term": "ECSS",
+        "sources_found": 4,
+        "response_available": false
+      },
+      "diagram": {
+        "term": "diagram",
+        "sources_found": 4,
+        "response_available": false
+      },
+      "table": {
+        "term": "table",
+        "sources_found": 4,
+        "response_available": false
+      },
+      "figure": {
+        "term": "figure",
+        "sources_found": 4,
+        "response_available": false
+      },
+      "requirement": {
+        "term": "requirement",
+        "sources_found": 4,
+        "response_available": false
+      }
+    },
+    "total_visual_content": 20,
+    "total_text_content": 5,
+    "api_methods_used": [
+      "query",
+      "retrieve_chunks"
+    ]
+  }
+}
