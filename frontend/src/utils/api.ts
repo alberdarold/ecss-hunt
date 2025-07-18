@@ -74,7 +74,11 @@ export const searchAPI = {
       params.append('min_score', filters.min_score.toString());
     }
 
-    return apiFetch<SearchResponse>(`/api/search?${params}`);
+    // Get the raw response from the backend
+    const rawResponse = await apiFetch<any>(`/api/search?${params}`);
+    
+    // Transform the response to match frontend expectations
+    return transformSearchResponse(rawResponse);
   },
 
   /**
@@ -86,7 +90,15 @@ export const searchAPI = {
       limit: filters.limit.toString(),
     });
 
-    return apiFetch<VisualSearchResponse>(`/api/search/visual?${params}`);
+    try {
+      // Try the visual endpoint first
+      const rawResponse = await apiFetch<any>(`/api/search/visual?${params}`);
+      return transformVisualSearchResponse(rawResponse);
+    } catch (error) {
+      // If visual endpoint doesn't exist, fall back to regular search
+      const rawResponse = await apiFetch<any>(`/api/search?${params}`);
+      return transformVisualSearchResponse(rawResponse);
+    }
   },
 };
 
@@ -155,6 +167,61 @@ export const systemAPI = {
   },
 };
 
+// Transform backend response to frontend format
+function transformSearchResponse(rawResponse: any): SearchResponse {
+  const results = rawResponse.results?.map((item: any) => ({
+    content: item.content || 'No content available',
+    summary: item.metadata?.document_name || 'No summary available',
+    relevance_score: item.score || item.metadata?.score || 0,
+    document_info: {
+      filename: item.metadata?.document_name || 'Unknown document',
+      chunk_number: item.metadata?.chunk_id || 0,
+      document_id: item.metadata?.external_id || item.id || 'unknown',
+    },
+    source_type: item.metadata?.source_type || 'Information',
+    explanation: item.metadata?.explanation || 'No explanation available',
+    visual_elements: item.metadata?.visual_elements || 0,
+    is_visual_content: item.metadata?.is_visual_content || false,
+  })) || [];
+
+  return {
+    query: rawResponse.query || '',
+    results,
+    total_results: rawResponse.total || 0,
+    visual_results: results.filter((r: any) => r.is_visual_content).length,
+    text_results: results.filter((r: any) => !r.is_visual_content).length,
+    contextual_response: rawResponse.summary || undefined,
+    processing_time: rawResponse.processing_time || 0,
+    timestamp: rawResponse.timestamp || new Date().toISOString(),
+  };
+}
+
+// Transform backend response to visual search format
+function transformVisualSearchResponse(rawResponse: any): VisualSearchResponse {
+  const results = rawResponse.results?.map((item: any) => ({
+    content: item.content || 'No content available',
+    summary: item.metadata?.document_name || 'No summary available',
+    relevance_score: item.score || item.metadata?.score || 0,
+    document_info: {
+      filename: item.metadata?.document_name || 'Unknown document',
+      chunk_number: item.metadata?.chunk_id || 0,
+      document_id: item.metadata?.external_id || item.id || 'unknown',
+    },
+    source_type: item.metadata?.source_type || 'Information',
+    explanation: item.metadata?.explanation || 'No explanation available',
+    visual_elements: item.metadata?.visual_elements || 0,
+    is_visual_content: item.metadata?.is_visual_content || false,
+  })) || [];
+
+  return {
+    query: rawResponse.query || '',
+    visual_results: results,
+    total_visual_results: rawResponse.total || 0,
+    processing_time: rawResponse.processing_time || 0,
+    timestamp: rawResponse.timestamp || new Date().toISOString(),
+  };
+}
+
 // Utility functions
 export const apiUtils = {
   /**
@@ -180,7 +247,10 @@ export const apiUtils = {
   /**
    * Format processing time for display
    */
-  formatProcessingTime(seconds: number): string {
+  formatProcessingTime(seconds: number | undefined): string {
+    if (seconds === undefined || seconds === null) {
+      return 'N/A';
+    }
     if (seconds < 1) {
       return `${(seconds * 1000).toFixed(0)}ms`;
     }
@@ -229,7 +299,8 @@ export const apiUtils = {
   /**
    * Get relevance score color for UI
    */
-  getRelevanceScoreColor(score: number): string {
+  getRelevanceScoreColor(score: number | undefined): string {
+    if (score === undefined || score === null) return 'text-gray-500';
     if (score >= 9) return 'text-green-600';
     if (score >= 7) return 'text-yellow-600';
     if (score >= 5) return 'text-orange-600';

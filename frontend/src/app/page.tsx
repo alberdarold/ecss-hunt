@@ -39,9 +39,11 @@ export default function ECSSFoundationApp() {
 
   const checkSystemStatus = async () => {
     try {
-      const status = await systemAPI.getStatus();
-      setSystemStatus(status);
+      const health = await systemAPI.getHealth();
+      // For now, we'll just check if we can connect to the API
       setIsConnected(true);
+      // Don't set complex system status since the deployed backend doesn't have /api/status
+      console.log('✅ Backend connection successful:', health);
     } catch (error) {
       console.error('System status check failed:', error);
       setIsConnected(false);
@@ -72,7 +74,7 @@ export default function ECSSFoundationApp() {
         results: response.results,
         visualResults,
         contextualResponse: response.contextual_response || null,
-        processingTime: response.processing_time,
+        processingTime: response.processing_time || 0,
         totalResults: response.total_results,
         visualCount: response.visual_results,
         textCount: response.text_results,
@@ -107,7 +109,7 @@ export default function ECSSFoundationApp() {
         results: response.visual_results,
         visualResults: response.visual_results,
         contextualResponse: null,
-        processingTime: response.processing_time,
+        processingTime: response.processing_time || 0,
         totalResults: response.total_visual_results,
         visualCount: response.total_visual_results,
         textCount: 0,
@@ -319,52 +321,52 @@ export default function ECSSFoundationApp() {
                 <div
                   key={index}
                   className={`bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 card-hover ${
-                    result.is_visual_content ? 'visual-indicator' : ''
+                    (result.is_visual_content === true) ? 'visual-indicator' : ''
                   }`}
                 >
                   <div className="flex items-start justify-between mb-3">
                     <div className="flex items-center space-x-3">
                       <div className={`px-3 py-1 rounded-full text-xs font-medium ${
-                        apiUtils.getSourceTypeColor(result.source_type)
+                        apiUtils.getSourceTypeColor(result.source_type || 'Information')
                       }`}>
-                        {result.source_type}
+                        {result.source_type || 'Information'}
                       </div>
                       
-                                             {result.is_visual_content && (
-                         <div className="flex items-center space-x-1 px-2 py-1 bg-purple-100 dark:bg-purple-900 text-purple-800 dark:text-purple-200 rounded-full text-xs">
-                           <EyeIcon />
-                           <span>Visual</span>
-                         </div>
-                       )}
+                                                                   {(result.is_visual_content === true) && (
+                        <div className="flex items-center space-x-1 px-2 py-1 bg-purple-100 dark:bg-purple-900 text-purple-800 dark:text-purple-200 rounded-full text-xs">
+                          <EyeIcon />
+                          <span>Visual</span>
+                        </div>
+                      )}
                       
                       <div className={`text-sm font-medium ${
-                        apiUtils.getRelevanceScoreColor(result.relevance_score)
+                        apiUtils.getRelevanceScoreColor(result.relevance_score || 0)
                       }`}>
-                        {result.relevance_score.toFixed(1)}
+                        {result.relevance_score ? result.relevance_score.toFixed(1) : 'N/A'}
                       </div>
                     </div>
                     
                     <div className="text-xs text-gray-500 dark:text-gray-400">
-                      {result.document_info.filename}
+                      {result.document_info?.filename || 'Unknown document'}
                     </div>
                   </div>
 
                   <div className="mb-3">
                     <h3 className="font-semibold text-gray-900 dark:text-white mb-2">
-                      {result.summary}
+                      {result.summary || 'No summary available'}
                     </h3>
                     <p className="text-gray-600 dark:text-gray-300 text-sm leading-relaxed">
-                      {result.content}
+                      {result.content || 'No content available'}
                     </p>
                   </div>
 
                   <div className="border-t border-gray-200 dark:border-gray-700 pt-3">
                     <div className="flex items-center justify-between">
                       <p className="text-xs text-gray-500 dark:text-gray-400">
-                        {result.explanation}
+                        {result.explanation || 'No explanation available'}
                       </p>
                       <div className="text-xs text-gray-500 dark:text-gray-400">
-                        Chunk #{result.document_info.chunk_number}
+                        Chunk #{result.document_info?.chunk_number || 'N/A'}
                       </div>
                     </div>
                   </div>

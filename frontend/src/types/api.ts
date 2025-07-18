@@ -5,18 +5,18 @@
 
 // Core search result type matching backend SearchResult
 export interface SearchResult {
-  content: string;
-  summary: string;
-  relevance_score: number;
-  document_info: {
-    filename: string;
-    chunk_number: number;
-    document_id: string;
+  content?: string;
+  summary?: string;
+  relevance_score?: number;
+  document_info?: {
+    filename?: string;
+    chunk_number?: number;
+    document_id?: string;
   };
-  source_type: string;
-  explanation: string;
-  visual_elements: number;
-  is_visual_content: boolean;
+  source_type?: string;
+  explanation?: string;
+  visual_elements?: number;
+  is_visual_content?: boolean;
 }
 
 // Enhanced search response from backend
