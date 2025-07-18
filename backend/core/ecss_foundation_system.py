@@ -226,30 +226,36 @@ class ECSSFoundationSystem:
         Enhanced search with visual content support.
         
         Uses the proven ColPali system that achieved 100% success rate.
+        Now uses the SAME method as the working test script.
         """
         logger.info(f"🔍 Enhanced search with visual content: '{query}'")
         
         try:
-            # Retrieve chunks with ColPali enabled
+            # Use the PROVEN working method from morphik_visual_content_processor.py
+            # Step 1: Get chunks for source information
             chunks = self.db.retrieve_chunks(
                 query, 
                 use_colpali=self.config.use_colpali, 
-                k=limit * 2  # Get more to filter
+                k=limit * 2
             )
             
+            # Step 2: Get detailed text extraction using query (the working method!)
+            response = self.db.query(query, use_colpali=self.config.use_colpali)
+            detailed_content = ""
+            if response and response.completion:
+                detailed_content = response.completion
+                logger.info(f"📖 Extracted detailed content: {len(detailed_content)} chars")
+            
             results = []
-            for chunk in chunks[:limit]:
-                result = self._create_enhanced_search_result(chunk, query)
+            for i, chunk in enumerate(chunks[:limit]):
+                # Create enhanced result using BOTH chunk info AND detailed extraction
+                result = self._create_enhanced_search_result_with_content(
+                    chunk, query, detailed_content, i
+                )
                 if result:
                     results.append(result)
             
-            # Also get contextual response
-            if self.config.use_colpali:
-                response = self.db.query(query, use_colpali=True)
-                if response and response.completion:
-                    logger.info(f"📖 Generated contextual response: {len(response.completion)} chars")
-            
-            logger.info(f"📊 Found {len(results)} enhanced results")
+            logger.info(f"📊 Found {len(results)} enhanced results with detailed content")
             return results
             
         except Exception as e:
@@ -301,6 +307,83 @@ class ECSSFoundationSystem:
             
         except Exception as e:
             logger.warning(f"⚠️ Could not create enhanced result: {e}")
+            return None
+    
+    def _create_enhanced_search_result_with_content(self, chunk, query: str, detailed_content: str, index: int) -> Optional[SearchResult]:
+        """Create enhanced search result using BOTH chunk info AND detailed content extraction (WORKING METHOD)."""
+        try:
+            # Extract chunk information
+            filename = getattr(chunk, 'filename', 'Unknown Document')
+            chunk_number = getattr(chunk, 'chunk_number', 0)
+            document_id = getattr(chunk, 'document_id', str(uuid.uuid4()))
+            score = getattr(chunk, 'score', 0.0)
+            
+            # Determine if this is visual content
+            is_visual = isinstance(chunk.content, Image.Image)
+            visual_elements = 1 if is_visual else 0
+            
+            # Use the detailed content extraction (the proven working method!)
+            if detailed_content and len(detailed_content) > 100:
+                # Split the detailed content intelligently for each result
+                content_sections = detailed_content.split('\n\n')
+                if index < len(content_sections) and content_sections[index].strip():
+                    content_text = content_sections[index].strip()
+                    # Create intelligent summary from first sentence or two
+                    sentences = content_text.split('. ')
+                    summary_text = '. '.join(sentences[:2]) + ('.' if len(sentences) > 2 else '')
+                    if len(summary_text) > 200:
+                        summary_text = summary_text[:200] + "..."
+                else:
+                    # If we have fewer sections than results, use a portion of the full content
+                    start_pos = min((index * len(detailed_content)) // 5, len(detailed_content) - 500)
+                    end_pos = min(start_pos + 500, len(detailed_content))
+                    content_text = detailed_content[start_pos:end_pos].strip()
+                    if content_text:
+                        # Find a good breaking point
+                        if '. ' in content_text:
+                            sentences = content_text.split('. ')
+                            content_text = '. '.join(sentences[:-1]) + '.'
+                        summary_text = content_text[:200] + "..." if len(content_text) > 200 else content_text
+                    else:
+                        content_text = "Content extracted from visual elements"
+                        summary_text = "Visual content analysis"
+                
+                # Clean up the content
+                if content_text.startswith('...'):
+                    content_text = content_text[3:].strip()
+            else:
+                # Fallback for when no detailed content is available
+                if is_visual:
+                    size = getattr(chunk.content, 'size', (0, 0))
+                    content_text = f"Visual elements from ECSS document - {size[0]}x{size[1]} pixels"
+                    summary_text = f"Visual content from {filename}"
+                else:
+                    content_text = str(chunk.content).strip() if chunk.content else f"Content from {filename}"
+                    summary_text = content_text[:200] + "..." if len(content_text) > 200 else content_text
+            
+            # Enhanced source classification
+            source_type = self._determine_source_type(content_text, is_visual)
+            
+            # Generate intelligent explanation
+            explanation = self._create_explanation(content_text, query, is_visual)
+            
+            return SearchResult(
+                content=content_text,
+                summary=summary_text,
+                relevance_score=score,
+                document_info={
+                    'filename': filename,
+                    'chunk_number': chunk_number,
+                    'document_id': document_id,
+                },
+                source_type=source_type,
+                explanation=explanation,
+                visual_elements=visual_elements,
+                is_visual_content=is_visual
+            )
+            
+        except Exception as e:
+            logger.error(f"❌ Failed to create enhanced search result with content: {e}")
             return None
     
     def _create_intelligent_summary(self, content: str) -> str:
