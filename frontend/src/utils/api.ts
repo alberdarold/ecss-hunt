@@ -1,6 +1,6 @@
 /**
  * API utility functions for the ECSS Foundation System
- * Handles communication with the backend foundation system
+ * Updated to work with the Production Working API on Render
  */
 
 import {
@@ -18,13 +18,13 @@ import {
   BatchIngestionRequest,
 } from '../types/api';
 
-// Get API base URL from environment
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+// Get API base URL from environment - points to our Render backend
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://ecss-hunt.onrender.com';
 
-// API configuration
+// API configuration for Production Working API
 const API_CONFIG = {
   baseUrl: API_BASE_URL,
-  timeout: 30000,
+  timeout: 30000, // 30 seconds for comprehensive searches
   headers: {
     'Content-Type': 'application/json',
   },
@@ -58,112 +58,138 @@ async function apiFetch<T>(
   return response.json();
 }
 
-// Search API functions
+// Search API functions - Updated for Production Working API
 export const searchAPI = {
   /**
    * Enhanced search with visual content support
+   * Uses the working backend's unified search endpoint
    */
   async search(filters: SearchFilters): Promise<SearchResponse> {
     const params = new URLSearchParams({
       q: filters.query,
-      limit: filters.limit.toString(),
-      include_visual: filters.include_visual.toString(),
+      k: filters.limit.toString(),
     });
 
-    if (filters.min_score !== undefined) {
-      params.append('min_score', filters.min_score.toString());
-    }
-
-    // Get the raw response from the backend
-    const rawResponse = await apiFetch<any>(`/api/search?${params}`);
+    // Our working backend includes both text and visual search in one endpoint
+    const rawResponse = await apiFetch<any>(`/api/working/search?${params}`);
     
     // Transform the response to match frontend expectations
     return transformSearchResponse(rawResponse);
   },
 
   /**
-   * Search specifically for visual content
+   * Visual search - uses the same endpoint as regular search
+   * Our working backend combines both text and visual search
    */
   async searchVisual(filters: VisualSearchFilters): Promise<VisualSearchResponse> {
     const params = new URLSearchParams({
       q: filters.query,
-      limit: filters.limit.toString(),
+      k: filters.limit.toString(),
     });
 
-    try {
-      // Try the visual endpoint first
-      const rawResponse = await apiFetch<any>(`/api/search/visual?${params}`);
-      return transformVisualSearchResponse(rawResponse);
-    } catch (error) {
-      // If visual endpoint doesn't exist, fall back to regular search
-      const rawResponse = await apiFetch<any>(`/api/search?${params}`);
-      return transformVisualSearchResponse(rawResponse);
-    }
+    // Use the unified search endpoint (includes visual via ColPali)
+    const rawResponse = await apiFetch<any>(`/api/working/search?${params}`);
+    return transformVisualSearchResponse(rawResponse);
   },
 };
 
-// Document management API functions
+// Document management API functions - Limited to available endpoints
 export const documentsAPI = {
   /**
-   * Get list of all ingested documents
+   * Get list of all ingested documents - NOT AVAILABLE in working backend
+   * Returns mock data for UI compatibility
    */
   async getDocuments(): Promise<DocumentsResponse> {
-    return apiFetch<DocumentsResponse>('/api/documents');
+    // Working backend doesn't have this endpoint, return mock data
+    return {
+      documents: [],
+      total_documents: 0,
+      timestamp: new Date().toISOString()
+    };
   },
 
   /**
-   * Get chunks for a specific document
+   * Get chunks for a specific document - NOT AVAILABLE in working backend
    */
   async getDocumentChunks(documentId: string, limit: number = 20): Promise<DocumentChunksResponse> {
-    const params = new URLSearchParams({
-      limit: limit.toString(),
-    });
-
-    return apiFetch<DocumentChunksResponse>(`/api/documents/${documentId}/chunks?${params}`);
-  },
-
-  /**
-   * Ingest a single document
-   */
-  async ingestDocument(filePath: string): Promise<IngestionResult> {
-    return apiFetch<IngestionResult>('/api/ingest', {
-      method: 'POST',
-      body: JSON.stringify({ file_path: filePath }),
-    });
-  },
-
-  /**
-   * Start batch ingestion
-   */
-  async batchIngest(request: BatchIngestionRequest): Promise<BatchIngestionResponse> {
-    return apiFetch<BatchIngestionResponse>('/api/ingest/batch', {
-      method: 'POST',
-      body: JSON.stringify(request),
-    });
+    // Working backend doesn't have this endpoint
+    return {
+      document_id: documentId,
+      chunks: [],
+      total_chunks: 0,
+      visual_chunks: 0,
+      text_chunks: 0,
+      timestamp: new Date().toISOString()
+    };
   },
 };
 
-// System monitoring API functions
+// Ingestion API functions - NOT AVAILABLE in working backend
+export const ingestionAPI = {
+  /**
+   * Ingest a single document - NOT AVAILABLE in working backend
+   */
+  async ingestDocument(filePath: string): Promise<IngestionResult> {
+    throw new Error("Document ingestion not available in working backend");
+  },
+
+  /**
+   * Batch ingest documents - NOT AVAILABLE in working backend
+   */
+  async batchIngest(request: BatchIngestionRequest): Promise<BatchIngestionResponse> {
+    throw new Error("Batch ingestion not available in working backend");
+  },
+};
+
+// System monitoring API functions - Updated for working backend
 export const systemAPI = {
   /**
-   * Get basic health check
+   * Health check - Uses standard /api/health endpoint
    */
   async getHealth(): Promise<{ status: string; timestamp: string }> {
     return apiFetch<{ status: string; timestamp: string }>('/api/health');
   },
 
   /**
-   * Get comprehensive system status
+   * System status - Uses /api/working/status endpoint
    */
   async getStatus(): Promise<SystemStatusResponse> {
-    return apiFetch<SystemStatusResponse>('/api/status');
+    return apiFetch<SystemStatusResponse>('/api/working/status');
   },
 
   /**
-   * Get detailed system statistics
+   * System capabilities - Available in working backend
+   */
+  async getCapabilities(): Promise<any> {
+    return apiFetch<any>('/api/working/capabilities');
+  },
+
+  /**
+   * System stats - NOT AVAILABLE in working backend
    */
   async getStats(): Promise<SystemStatsResponse> {
-    return apiFetch<SystemStatsResponse>('/api/stats');
+    // Working backend doesn't have this endpoint, return mock data
+    return {
+      system_status: { message: "Stats not available in working backend" },
+      documents: {
+        total: 0,
+        processing: 0,
+        failed: 0,
+        completed: 0
+      },
+      chunks: {
+        total: 0,
+        visual: 0,
+        text: 0,
+        visual_percentage: 0
+      },
+      api_metrics: {
+        request_count: 0,
+        error_count: 0,
+        error_rate: 0
+      },
+      timestamp: new Date().toISOString()
+    };
   },
 };
 
