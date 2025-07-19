@@ -1,0 +1,19 @@
+services:
+  - type: web
+    name: ecss-hunt-backend
+    env: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: python main.py
+    plan: free
+    environmentVariables:
+      - key: PYTHON_VERSION
+        value: 3.11.0
+      - key: MORPHIK_URI
+        sync: false
+      - key: OPENAI_API_KEY  
+        sync: false
+      - key: ECSS_DOCUMENTS_PATH
+        value: "./ECSS Published Standards/1-Active Standards/"
+      - key: DEBUG
+        value: false
+    healthCheckPath: /api/health 

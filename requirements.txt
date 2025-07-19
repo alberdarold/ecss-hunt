@@ -1,0 +1,17 @@
+# ECSS Hunt - Production Requirements for Render Deployment
+# Core Framework
+flask==3.0.0
+flask-cors==4.0.0
+gunicorn==21.2.0
+
+# Morphik AI Platform
+morphik==0.2.3
+
+# Data Processing & Utilities  
+requests==2.31.0
+pydantic==2.5.0
+python-dotenv==1.0.0
+
+# Additional utilities
+fpdf2==2.7.6
+pathlib2==2.3.7 
