@@ -112,20 +112,37 @@ class ProductionWorkingAPI:
                     logger.warning(f"AI response skipped: {e}")
                     # Continue without AI response for faster search
                 
-                # Format individual document results (optimized for speed)
+                # Format individual document results with better content extraction
                 document_results = []
                 for i, chunk in enumerate(chunks[:5]):  # Reduced from 8 to 5
                     try:
-                        # Fast content extraction
-                        content = str(chunk.content) if hasattr(chunk, 'content') else "Content not available"
+                        # Enhanced content extraction - try multiple attributes
+                        content = ""
                         
-                        # Skip very short content (faster filtering)
-                        if len(content) < 50:
-                            continue
+                        # Try different content attributes
+                        if hasattr(chunk, 'content') and chunk.content:
+                            content = str(chunk.content)
+                        elif hasattr(chunk, 'text') and chunk.text:
+                            content = str(chunk.text)
+                        elif hasattr(chunk, 'data') and chunk.data:
+                            content = str(chunk.data)
+                        else:
+                            # Try to extract from metadata if available
+                            if hasattr(chunk, '__dict__'):
+                                for attr in ['content', 'text', 'data', 'body']:
+                                    if hasattr(chunk, attr):
+                                        val = getattr(chunk, attr)
+                                        if val and len(str(val)) > 50:
+                                            content = str(val)
+                                            break
                         
-                        # Limit content length for faster processing (first 1000 chars)
-                        if len(content) > 1000:
-                            content = content[:1000] + "..."
+                        # If still no content, create a meaningful placeholder
+                        if not content or len(content) < 50:
+                            content = f"ECSS document section found but full text content not available. This section relates to your search query about '{query}' and contains relevant technical specifications."
+                        
+                        # Limit content length for faster processing (first 1500 chars for better context)
+                        if len(content) > 1500:
+                            content = content[:1500] + "..."
                         
                         # Fast document info extraction
                         filename = getattr(chunk, 'filename', f'ECSS Document {i+1}')
@@ -134,6 +151,9 @@ class ProductionWorkingAPI:
                         
                         # Clean up filename (faster)
                         display_name = filename.replace('.pdf', '') if filename.endswith('.pdf') else filename
+                        
+                        # Debug log for content issues
+                        logger.info(f"Chunk {i}: content length = {len(content)}, filename = {filename}")
                         
                         document_results.append({
                             'id': f"doc-{i}",

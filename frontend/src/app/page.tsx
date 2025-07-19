@@ -160,18 +160,19 @@ export default function ECSSFoundationApp() {
               
               {/* AI Contextual Response Box */}
               {searchResults.ai_response && (
-                <div className="bg-slate-50 dark:bg-slate-900/20 border border-slate-200 dark:border-slate-700 rounded-lg p-6">
-                  <div className="flex items-center gap-2 mb-3">
-                    <div className="w-2 h-2 bg-slate-500 rounded-full"></div>
-                    <h3 className="text-lg font-semibold text-slate-800 dark:text-slate-200">
+                <div className="bg-gray-100 dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg p-4">
+                  <div className="flex items-center gap-2 mb-2">
+                    <div className="w-2 h-2 bg-gray-600 rounded-full"></div>
+                    <h3 className="text-base font-semibold text-gray-800 dark:text-gray-200">
                       🤖 AI Contextual Response
                     </h3>
-                    <span className="text-sm text-slate-600 dark:text-slate-400">
+                    <span className="text-xs text-gray-600 dark:text-gray-400">
                       {searchResults.processing_time?.toFixed(1)}s
                     </span>
                   </div>
                   <div 
-                    className="prose prose-slate dark:prose-invert max-w-none text-sm leading-relaxed space-y-2"
+                    className="text-sm text-gray-700 dark:text-gray-300 leading-snug space-y-1"
+                    style={{ lineHeight: '1.4' }}
                     dangerouslySetInnerHTML={{ __html: searchResults.ai_response }}
                   />
                 </div>
@@ -228,12 +229,17 @@ export default function ECSSFoundationApp() {
                       
                       {/* Main text content from document */}
                       <div className="text-gray-700 dark:text-gray-300 leading-relaxed">
-                        {result.content && result.content.length > 50 ? (
-                          <p className="whitespace-pre-line">{result.content}</p>
+                        {result.content && result.content.trim() ? (
+                          <div className="whitespace-pre-line text-sm leading-relaxed">
+                            {result.content}
+                          </div>
                         ) : (
-                          <p className="text-gray-500 italic">
-                            Text extraction in progress... Document section identified but content not yet available.
-                          </p>
+                          <div className="text-gray-500 italic text-sm">
+                            <p>📋 ECSS document section identified</p>
+                            <p>🔍 Content relates to: <span className="font-medium">"{searchResults.query}"</span></p>
+                            <p>📄 Source: {result.source}</p>
+                            <p className="text-xs mt-2">Full text content extraction may still be processing...</p>
+                          </div>
                         )}
                       </div>
                       
