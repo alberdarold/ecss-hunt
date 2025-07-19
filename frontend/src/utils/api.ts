@@ -93,34 +93,20 @@ export const searchAPI = {
   },
 };
 
-// Document management API functions - Limited to available endpoints
+// Document management API functions - LIMITED AVAILABILITY in working backend
 export const documentsAPI = {
   /**
    * Get list of all ingested documents - NOT AVAILABLE in working backend
-   * Returns mock data for UI compatibility
    */
   async getDocuments(): Promise<DocumentsResponse> {
-    // Working backend doesn't have this endpoint, return mock data
-    return {
-      documents: [],
-      total_documents: 0,
-      timestamp: new Date().toISOString()
-    };
+    throw new Error("Document listing not available in working backend. Use search functionality instead.");
   },
 
   /**
    * Get chunks for a specific document - NOT AVAILABLE in working backend
    */
   async getDocumentChunks(documentId: string, limit: number = 20): Promise<DocumentChunksResponse> {
-    // Working backend doesn't have this endpoint
-    return {
-      document_id: documentId,
-      chunks: [],
-      total_chunks: 0,
-      visual_chunks: 0,
-      text_chunks: 0,
-      timestamp: new Date().toISOString()
-    };
+    throw new Error("Document chunks not available in working backend. Use search functionality instead.");
   },
 };
 
@@ -168,28 +154,7 @@ export const systemAPI = {
    * System stats - NOT AVAILABLE in working backend
    */
   async getStats(): Promise<SystemStatsResponse> {
-    // Working backend doesn't have this endpoint, return mock data
-    return {
-      system_status: { message: "Stats not available in working backend" },
-      documents: {
-        total: 0,
-        processing: 0,
-        failed: 0,
-        completed: 0
-      },
-      chunks: {
-        total: 0,
-        visual: 0,
-        text: 0,
-        visual_percentage: 0
-      },
-      api_metrics: {
-        request_count: 0,
-        error_count: 0,
-        error_rate: 0
-      },
-      timestamp: new Date().toISOString()
-    };
+    throw new Error("Detailed system statistics not available in working backend. Use status endpoint instead.");
   },
 };
 

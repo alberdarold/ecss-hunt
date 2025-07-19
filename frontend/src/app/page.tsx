@@ -58,7 +58,7 @@ export default function ECSSFoundationApp() {
     visualContentRatio: 0,
   });
   
-  const [activeTab, setActiveTab] = useState<'search' | 'dashboard' | 'documents'>('search');
+  const [activeTab, setActiveTab] = useState<'search' | 'dashboard'>('search');
 
   // Check API connection on mount
   useEffect(() => {
@@ -67,29 +67,12 @@ export default function ECSSFoundationApp() {
 
   const checkSystemStatus = async () => {
     try {
-      // First try the enhanced foundation system status endpoint
-      try {
-        const status = await systemAPI.getStatus();
-        setSystemStatus(status);
-        setIsConnected(true);
-        
-        // Extract enhanced metrics
-        if (status.api_metrics) {
-          setSystemMetrics({
-            requestCount: status.api_metrics.request_count || 0,
-            errorCount: status.api_metrics.error_count || 0,
-            avgProcessingTime: 0, // Will be calculated from search results
-            visualContentRatio: 0, // Will be calculated from search results
-          });
-        }
-        
-        console.log('✅ Enhanced foundation system connected:', status);
-      } catch (statusError) {
-        // Fallback to basic health check for old backend
-        const health = await systemAPI.getHealth();
-        setIsConnected(true);
-        console.log('✅ Basic backend connection successful:', health);
-      }
+      // Get status from working backend
+      const status = await systemAPI.getStatus();
+      setSystemStatus(status);
+      setIsConnected(status.connection === 'connected');
+      
+      console.log('✅ Working backend connected:', status);
     } catch (error) {
       console.error('System status check failed:', error);
       setIsConnected(false);
@@ -236,44 +219,36 @@ export default function ECSSFoundationApp() {
               
               {systemStatus && (
                 <div className="text-xs text-gray-500 dark:text-gray-400 text-right">
-                  <div>ColPali: {systemStatus.foundation_system?.colpali_enabled ? 'Enabled' : 'Disabled'}</div>
-                  <div>API Requests: {systemMetrics.requestCount}</div>
+                  <div>System: {systemStatus.system}</div>
+                  <div>ColPali: {systemStatus.features?.colpali_visual ? 'Available' : 'Unavailable'}</div>
                 </div>
               )}
             </div>
           </div>
           
           {/* Navigation Tabs */}
-          <div className="flex space-x-1 bg-gray-100 dark:bg-gray-800 rounded-lg p-1">
+          <div className="flex space-x-1 bg-gray-100 dark:bg-gray-700 rounded-lg p-1 mb-8">
             <button
               onClick={() => setActiveTab('search')}
-              className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+              className={`flex items-center space-x-2 px-4 py-2 rounded-md transition-colors duration-200 ${
                 activeTab === 'search'
-                  ? 'bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm'
-                  : 'text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white'
+                  ? 'bg-white dark:bg-gray-600 text-blue-600 dark:text-blue-400 shadow-sm'
+                  : 'text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-100'
               }`}
             >
-              <SearchIcon /> Search
+              <SearchIcon />
+              <span>Search</span>
             </button>
             <button
               onClick={() => setActiveTab('dashboard')}
-              className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+              className={`flex items-center space-x-2 px-4 py-2 rounded-md transition-colors duration-200 ${
                 activeTab === 'dashboard'
-                  ? 'bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm'
-                  : 'text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white'
+                  ? 'bg-white dark:bg-gray-600 text-blue-600 dark:text-blue-400 shadow-sm'
+                  : 'text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-100'
               }`}
             >
-              <BarChartIcon /> Dashboard
-            </button>
-            <button
-              onClick={() => setActiveTab('documents')}
-              className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
-                activeTab === 'documents'
-                  ? 'bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm'
-                  : 'text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white'
-              }`}
-            >
-              <DatabaseIcon /> Documents
+              <BarChartIcon />
+              <span>Dashboard</span>
             </button>
           </div>
         </div>
@@ -629,41 +604,41 @@ export default function ECSSFoundationApp() {
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                   <div className="text-center p-6 bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-800/20 rounded-lg">
                     <div className="text-3xl font-bold text-blue-600 dark:text-blue-400">
-                      {systemStatus?.foundation_system?.ingestion_stats?.total_processed || 0}
+                      {systemStatus?.connection === 'connected' ? '✅' : '❌'}
                     </div>
-                    <div className="text-sm text-blue-700 dark:text-blue-300 mt-2">Documents Processed</div>
+                    <div className="text-sm text-blue-700 dark:text-blue-300 mt-2">Backend Status</div>
                     <div className="text-xs text-blue-600 dark:text-blue-400 mt-1">
-                      {systemStatus?.foundation_system?.ingestion_stats?.successful || 0} successful
+                      {systemStatus?.system || 'Unknown'}
                     </div>
                   </div>
                   
                   <div className="text-center p-6 bg-gradient-to-br from-green-50 to-green-100 dark:from-green-900/20 dark:to-green-800/20 rounded-lg">
                     <div className="text-3xl font-bold text-green-600 dark:text-green-400">
-                      {systemStatus?.foundation_system?.ingestion_stats?.visual_chunks_created || 0}
+                      {systemStatus?.features?.colpali_visual ? '✅' : '❌'}
                     </div>
-                    <div className="text-sm text-green-700 dark:text-green-300 mt-2">Visual Chunks</div>
+                    <div className="text-sm text-green-700 dark:text-green-300 mt-2">ColPali Visual</div>
                     <div className="text-xs text-green-600 dark:text-green-400 mt-1">
-                      ColPali Enabled
+                      Image & diagram search
                     </div>
                   </div>
                     
                   <div className="text-center p-6 bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-900/20 dark:to-purple-800/20 rounded-lg">
                     <div className="text-3xl font-bold text-purple-600 dark:text-purple-400">
-                      {systemStatus?.api_metrics?.request_count || systemMetrics.requestCount}
+                      {systemStatus?.features?.standard_query ? '✅' : '❌'}
                         </div>
-                    <div className="text-sm text-purple-700 dark:text-purple-300 mt-2">API Requests</div>
+                    <div className="text-sm text-purple-700 dark:text-purple-300 mt-2">Text Search</div>
                     <div className="text-xs text-purple-600 dark:text-purple-400 mt-1">
-                      {systemMetrics.errorCount} errors
+                      Standard ECSS search
                             </div>
                           </div>
                           
                   <div className="text-center p-6 bg-gradient-to-br from-orange-50 to-orange-100 dark:from-orange-900/20 dark:to-orange-800/20 rounded-lg">
                     <div className="text-3xl font-bold text-orange-600 dark:text-orange-400">
-                      {systemMetrics.avgProcessingTime.toFixed(2)}s
+                      {systemMetrics.avgProcessingTime.toFixed(1)}s
                     </div>
-                    <div className="text-sm text-orange-700 dark:text-orange-300 mt-2">Avg Processing Time</div>
+                    <div className="text-sm text-orange-700 dark:text-orange-300 mt-2">Avg Response Time</div>
                     <div className="text-xs text-orange-600 dark:text-orange-400 mt-1">
-                      {systemMetrics.visualContentRatio.toFixed(1)}% visual
+                      From recent searches
                     </div>
                   </div>
                             </div>
@@ -732,28 +707,7 @@ export default function ECSSFoundationApp() {
                           </div>
                         )}
         
-        {/* Documents Tab */}
-        {activeTab === 'documents' && (
-          <div className="space-y-8">
-            <div className="max-w-6xl mx-auto">
-              <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6">
-                <h3 className="text-2xl font-semibold text-gray-900 dark:text-white mb-6 flex items-center space-x-2">
-                  <DatabaseIcon />
-                  <span>Document Management</span>
-                </h3>
-                
-                <div className="text-center py-12">
-                  <div className="text-gray-500 dark:text-gray-400 text-lg">
-                    📚 Document management interface coming soon...
-                      </div>
-                  <div className="text-sm text-gray-400 dark:text-gray-500 mt-2">
-                    This will include document upload, batch processing, and chunk analysis
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
+
       </main>
     </div>
   );

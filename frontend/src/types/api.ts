@@ -81,32 +81,19 @@ export interface DocumentChunksResponse {
   timestamp: string;
 }
 
-// System status response
+// System status response - Updated for working backend
 export interface SystemStatusResponse {
-  status: string;
-  timestamp: string;
-  foundation_system: {
-    morphik_connected: boolean;
-    colpali_enabled: boolean;
-    ingestion_stats: {
-      total_processed: number;
-      successful: number;
-      failed: number;
-      visual_chunks_created: number;
-      text_chunks_created: number;
-      total_cost: number;
-    };
-    config: {
-      max_documents: number;
-      cost_limit_per_doc: number;
-      debug_mode: boolean;
-    };
+  connection: string;
+  features: {
+    agent_query: boolean;
+    batch_operations: boolean;
+    colpali_visual: boolean;
+    document_access: boolean;
+    knowledge_graphs: boolean;
+    standard_query: boolean;
   };
-  api_metrics: {
-    request_count: number;
-    error_count: number;
-    error_rate: number;
-  };
+  system: string;
+  timestamp: number;
 }
 
 // System statistics response
