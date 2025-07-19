@@ -95,8 +95,15 @@ class ProductionWorkingAPI:
                 # Get document chunks (PRIORITIZE TEXT CONTENT)
                 try:
                     # Force TEXT content retrieval, not visual content
-                    chunks = self.morphik_system.db.retrieve_chunks(query, k=6, use_colpali=False)  # NO ColPali = text only
-                    logger.info(f"Retrieved {len(chunks)} TEXT chunks for query: '{query}'")
+                    # Use more specific query for precise requirements
+                    if any(char.isdigit() for char in query):  # If query contains numbers (like 3.2.20)
+                        # Use exact requirement search
+                        search_query = f"requirement {query} OR section {query} OR {query}"
+                    else:
+                        search_query = query
+                    
+                    chunks = self.morphik_system.db.retrieve_chunks(search_query, k=6, use_colpali=False)  # NO ColPali = text only
+                    logger.info(f"Retrieved {len(chunks)} TEXT chunks for query: '{search_query}'")
                 except Exception as e:
                     logger.error(f"Failed to retrieve chunks: {e}")
                     chunks = []
@@ -147,12 +154,23 @@ class ProductionWorkingAPI:
                         # If STILL no text content, try alternative methods to get REAL ECSS text
                         if not content or len(content) < 50:
                             try:
-                                # Try to get REAL text using different Morphik methods
-                                # Method 1: Direct document query for requirements
-                                doc_response = self.morphik_system.db.query(f"ECSS requirements {query}", use_colpali=False)
+                                # Try to get PRECISE requirements using targeted queries
+                                # Method 1: Direct document query for SPECIFIC requirements (not general descriptions)
+                                precise_query = f"Find the exact requirement or definition for: {query}"
+                                doc_response = self.morphik_system.db.query(precise_query, use_colpali=False)
                                 if doc_response and doc_response.completion and len(doc_response.completion) > 100:
-                                    content = doc_response.completion[:1500]
-                                    logger.info(f"Got ECSS requirements text: {len(content)} chars")
+                                    # Check if response contains the actual requirement, not just description
+                                    response_text = doc_response.completion
+                                    if query.lower() in response_text.lower() or any(term in response_text for term in query.split()):
+                                        content = response_text[:1500]
+                                        logger.info(f"Got precise ECSS requirement: {len(content)} chars")
+                                    else:
+                                        # Try more specific query
+                                        specific_query = f"Extract the exact text of requirement {query} from ECSS document"
+                                        specific_response = self.morphik_system.db.query(specific_query, use_colpali=False)
+                                        if specific_response and specific_response.completion:
+                                            content = specific_response.completion[:1500]
+                                            logger.info(f"Got specific requirement text: {len(content)} chars")
                                 
                                 # Method 2: Try with document ID if available
                                 elif document_id != f'doc_{i}':
@@ -173,6 +191,25 @@ class ProductionWorkingAPI:
                         if not content or len(content) < 50:
                             logger.warning(f"Skipping chunk {i} - no meaningful text content found")
                             continue
+                        
+                        # Validate that content contains actual requirements, not just descriptions
+                        content_lower = content.lower()
+                        if any(char.isdigit() for char in query):  # If searching for numbered requirements
+                            # Check if content contains the specific requirement number
+                            query_terms = query.lower().split()
+                            if not any(term in content_lower for term in query_terms):
+                                logger.warning(f"Chunk {i} doesn't contain the specific requirement '{query}' - may be general description")
+                                # Try to get more specific content
+                                try:
+                                    specific_query = f"Find the exact text containing {query}"
+                                    specific_response = self.morphik_system.db.query(specific_query, use_colpali=False)
+                                    if specific_response and specific_response.completion:
+                                        specific_content = specific_response.completion
+                                        if query.lower() in specific_content.lower():
+                                            content = specific_content[:1500]
+                                            logger.info(f"Got specific requirement content: {len(content)} chars")
+                                except Exception as e:
+                                    logger.warning(f"Failed to get specific requirement: {e}")
                         
                         # Limit content length for faster processing (first 1500 chars for better context)
                         if len(content) > 1500:
