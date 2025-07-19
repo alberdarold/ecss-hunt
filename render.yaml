@@ -3,7 +3,14 @@ services:
     name: ecss-hunt-backend
     env: python
     buildCommand: pip install -r requirements.txt
-    startCommand: python main.py
+    startCommand: |
+      if [ -f "main.py" ]; then
+        python main.py
+      elif [ -f "backend/main.py" ]; then
+        cd backend && python main.py
+      else
+        cd backend && python production/production_working_api.py
+      fi
     plan: free
     environmentVariables:
       - key: PYTHON_VERSION
@@ -16,4 +23,6 @@ services:
         value: "./ECSS Published Standards/1-Active Standards/"
       - key: DEBUG
         value: false
+      - key: PYTHONPATH
+        value: "/opt/render/project/src:/opt/render/project/src/backend"
     healthCheckPath: /api/health 
