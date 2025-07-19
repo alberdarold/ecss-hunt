@@ -84,64 +84,82 @@ class ProductionWorkingAPI:
         
         @app.route('/api/working/search', methods=['GET'])
         def working_search():
-            """Multi-method search using confirmed working features."""
+            """Enhanced search returning individual document sections with full content."""
             try:
                 query = request.args.get('q', '').strip()
                 if not query:
                     return jsonify({'error': 'Query parameter q is required'}), 400
                 
-                # Use only confirmed working methods
-                methods = ['standard', 'colpali']  # No agent due to timeout
+                start_time = time.time()
                 
-                results = self.morphik_system.multi_method_search(query, methods)
+                # Get individual document chunks with full content
+                try:
+                    chunks = self.morphik_system.db.retrieve_chunks(query, k=10)
+                    logger.info(f"Retrieved {len(chunks)} chunks for query: '{query}'")
+                except Exception as e:
+                    logger.error(f"Failed to retrieve chunks: {e}")
+                    chunks = []
                 
-                # Format results for frontend
-                formatted_results = []
+                # Get AI contextual response
+                ai_response = None
+                try:
+                    response = self.morphik_system.db.query(query, use_colpali=False)
+                    if response and response.completion:
+                        ai_response = response.completion
+                        logger.info(f"Got AI response: {len(ai_response)} chars")
+                except Exception as e:
+                    logger.error(f"Failed to get AI response: {e}")
                 
-                # Add standard search results
-                if 'standard' in results['results']:
-                    standard = results['results']['standard']
-                    formatted_results.append({
-                        'title': 'Standard Search Result',
-                        'content': standard['response'],
-                        'source_type': 'text',
-                        'method': 'standard',
-                        'relevance_score': 0.9,  # High confidence for working method
-                        'processing_time': results['processing_time']
-                    })
+                # Format individual document results
+                document_results = []
+                for i, chunk in enumerate(chunks[:8]):  # Return up to 8 individual results
+                    try:
+                        # Get full content from chunk
+                        content = str(chunk.content) if hasattr(chunk, 'content') else "Content not available"
+                        
+                        # Don't truncate - show full content
+                        if len(content) > 50:  # Only include meaningful content
+                            
+                            # Extract document info
+                            filename = getattr(chunk, 'filename', f'ECSS Document {i+1}')
+                            score = getattr(chunk, 'score', 0.0) * 100  # Convert to percentage
+                            document_id = getattr(chunk, 'document_id', 'unknown')
+                            
+                            # Clean up filename for display
+                            if filename.endswith('.pdf'):
+                                filename = filename[:-4]
+                            
+                            document_results.append({
+                                'id': f"doc-{document_id}-{i}",
+                                'title': f"Section from {filename}",
+                                'content': content,  # Full content, not truncated
+                                'score': round(score, 1),
+                                'source': filename,
+                                'metadata': {
+                                    'document_name': filename,
+                                    'is_visual': False,
+                                    'method': 'text_extraction'
+                                }
+                            })
+                    except Exception as e:
+                        logger.warning(f"Failed to process chunk {i}: {e}")
+                        continue
                 
-                # Add ColPali visual results
-                if 'colpali' in results['results']:
-                    colpali = results['results']['colpali']
-                    formatted_results.append({
-                        'title': 'Visual Content Analysis',
-                        'content': colpali['response'],
-                        'source_type': 'visual',
-                        'method': 'colpali',
-                        'relevance_score': 0.85,  # High confidence for working method
-                        'processing_time': results['processing_time']
-                    })
+                processing_time = time.time() - start_time
                 
-                # Add context chunks as separate results
-                if 'context_chunks' in results:
-                    for i, chunk in enumerate(results['context_chunks']):
-                        formatted_results.append({
-                            'title': f"Source: {chunk['filename']}",
-                            'content': chunk['content'],
-                            'source_type': 'document',
-                            'method': 'context',
-                            'relevance_score': chunk.get('score', 0.7),
-                            'processing_time': results['processing_time']
-                        })
-                
-                return jsonify({
-                    'results': formatted_results,
+                # Prepare final response
+                response_data = {
+                    'ai_response': ai_response,
+                    'results': document_results,
+                    'total': len(document_results),
                     'query': query,
-                    'methods_used': results['methods_used'],
-                    'total_results': len(formatted_results),
-                    'processing_time': results['processing_time'],
-                    'timestamp': results['timestamp']
-                })
+                    'methods_used': ['text_extraction', 'ai_context'],
+                    'processing_time': processing_time,
+                    'timestamp': time.time()
+                }
+                
+                logger.info(f"✅ Search completed: {len(document_results)} individual results")
+                return jsonify(response_data)
                 
             except Exception as e:
                 logger.error(f"❌ Search failed: {e}")

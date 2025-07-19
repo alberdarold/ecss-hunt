@@ -1,0 +1,28 @@
+{
+  "total_documents": 3,
+  "successful_ingestions": 3,
+  "failed_ingestions": 0,
+  "total_time": 221.08,
+  "success_rate": 100.0,
+  "ingested_docs": [
+    {
+      "file": "..\\..\\..\\ECSS Published Standards\\1-Active Standards\\ECSS-M-70A(19April1996).pdf",
+      "external_id": "ECSS-M-70A(19April1996).pdf",
+      "processing_time": 99.09700298309326,
+      "method": "working_ingestion + ColPali"
+    },
+    {
+      "file": "..\\..\\..\\ECSS Published Standards\\1-Active Standards\\ECSS-Q-ST-40-12C(31July2008).pdf",
+      "external_id": "ECSS-Q-ST-40-12C(31July2008).pdf",
+      "processing_time": 53.29044795036316,
+      "method": "working_ingestion + ColPali"
+    },
+    {
+      "file": "..\\..\\..\\ECSS Published Standards\\1-Active Standards\\ECSS-E-ST-50-51C(5February2010).pdf",
+      "external_id": "ECSS-E-ST-50-51C(5February2010).pdf",
+      "processing_time": 52.71807622909546,
+      "method": "working_ingestion + ColPali"
+    }
+  ],
+  "failed_docs": []
+}

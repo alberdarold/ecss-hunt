@@ -5,7 +5,9 @@
 
 import {
   SearchResponse,
+  SearchResult,
   VisualSearchResponse,
+  VisualResult,
   DocumentsResponse,
   DocumentChunksResponse,
   SystemStatusResponse,
@@ -18,227 +20,241 @@ import {
   BatchIngestionRequest,
 } from '../types/api';
 
-// Get API base URL from environment - points to our Render backend
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://ecss-hunt.onrender.com';
+// Configuration - Always use Render backend
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'https://ecss-hunt.onrender.com';
+const API_VERSION = process.env.NEXT_PUBLIC_API_VERSION || 'working';
 
-// API configuration for Production Working API
-const API_CONFIG = {
-  baseUrl: API_BASE_URL,
-  timeout: 30000, // 30 seconds for comprehensive searches
-  headers: {
-    'Content-Type': 'application/json',
-  },
-};
-
-// Custom fetch wrapper with error handling
-async function apiFetch<T>(
-  endpoint: string,
-  options: RequestInit = {}
-): Promise<T> {
-  const url = `${API_CONFIG.baseUrl}${endpoint}`;
+// Helper function for API calls with better error handling
+async function apiFetch<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
+  const url = `${API_BASE_URL}/api/${API_VERSION}${endpoint}`;
   
-  const response = await fetch(url, {
+  const defaultHeaders = {
+    'Content-Type': 'application/json',
+    'Accept': 'application/json',
+  };
+
+  const config: RequestInit = {
     ...options,
     headers: {
-      ...API_CONFIG.headers,
+      ...defaultHeaders,
       ...options.headers,
     },
-  });
+  };
 
-  if (!response.ok) {
-    const errorData: ErrorResponse = await response.json().catch(() => ({
-      error: 'Network error',
-      message: `HTTP ${response.status}: ${response.statusText}`,
-      timestamp: new Date().toISOString(),
-    }));
+  try {
+    const response = await fetch(url, config);
     
-    throw new Error(errorData.message || errorData.error);
-  }
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+    }
 
-  return response.json();
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error(`API call failed for ${endpoint}:`, error);
+    throw error;
+  }
 }
 
-// Search API functions - Updated for Production API Server with Document Access
+// Transform function for search results with new backend format
+function transformSearchResponse(rawResponse: any): SearchResponse {
+  if (!rawResponse.results) {
+    return {
+      query: rawResponse.query || '',
+      results: [],
+      total: 0,
+      ai_response: '',
+      processing_time: rawResponse.processing_time || 0,
+      methods_used: rawResponse.methods_used || [],
+    };
+  }
+
+  // New backend format has ai_response separate from results
+  const aiResponse = rawResponse.ai_response || '';
+  
+  // Transform individual document results
+  const documentResults: SearchResult[] = rawResponse.results.map((result: any, index: number) => {
+    let content = result.content || '';
+    let isVisual = false;
+    let imageUrl = '';
+
+    // Handle visual content if present
+    if (result.metadata?.is_visual || content.startsWith('data:image/')) {
+      isVisual = true;
+      if (content.startsWith('data:image/')) {
+        imageUrl = content;
+        content = `[Visual Content] Diagram or table from ${result.metadata?.document_name || 'ECSS Document'}`;
+      }
+    }
+
+    return {
+      id: result.id || `result_${index}`,
+      title: result.title || `ECSS Document Section ${index + 1}`,
+      content: content,
+      score: result.score || 0,
+      source: result.source || result.metadata?.document_name || 'ECSS Document',
+      metadata: {
+        method: result.metadata?.method || 'text_extraction',
+        processing_time: rawResponse.processing_time || 0,
+        is_visual: isVisual,
+        image_url: imageUrl,
+        document_name: result.metadata?.document_name || result.source,
+      }
+    };
+  });
+
+  return {
+    query: rawResponse.query || '',
+    results: documentResults,
+    total: rawResponse.total || documentResults.length,
+    ai_response: cleanAIResponse(aiResponse),
+    processing_time: rawResponse.processing_time || 0,
+    methods_used: rawResponse.methods_used || [],
+  };
+}
+
+// Helper function to extract document name from title
+function extractDocumentName(title: string): string {
+  if (!title) return 'Unknown Document';
+  
+  // Extract ECSS document ID from title like "Source: ECSS-E-ST-50-51C(5February2010).pdf"
+  const match = title.match(/ECSS-[A-Z]-[A-Z]{2}-[\d-]+[A-Z]?\([^)]+\)\.pdf/);
+  if (match) {
+    return match[0];
+  }
+  
+  return title;
+}
+
+// Helper function to clean and format AI response
+function cleanAIResponse(response: string): string {
+  if (!response) return '';
+  
+  // Convert markdown formatting to HTML
+  let cleaned = response
+    // Convert bold markdown to HTML
+    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+    // Convert bullet points to HTML lists
+    .replace(/^[\s]*[-*]\s+(.+)$/gm, '<li>$1</li>')
+    // Convert numbered lists
+    .replace(/^[\s]*\d+\.\s+(.+)$/gm, '<li>$1</li>')
+    // Convert headers
+    .replace(/^#{1,3}\s+(.+)$/gm, '<h3>$1</h3>')
+    // Convert line breaks
+    .replace(/\n\n/g, '</p><p>')
+    .replace(/\n/g, '<br>');
+  
+  // Wrap in paragraphs
+  if (cleaned && !cleaned.startsWith('<')) {
+    cleaned = '<p>' + cleaned + '</p>';
+  }
+  
+  // Wrap list items in ul tags
+  cleaned = cleaned.replace(/(<li>.*?<\/li>)/g, '<ul>$1</ul>');
+  
+  return cleaned;
+}
+
+// Transform function for visual search results
+function transformVisualSearchResponse(rawResponse: any): VisualSearchResponse {
+  const visualResults: VisualResult[] = rawResponse.results?.filter((result: any) => 
+    result.source_type === 'visual' || result.method === 'colpali'
+  ).map((result: any) => ({
+    id: `visual_${Date.now()}_${Math.random()}`,
+    image_url: result.content?.startsWith('data:image') ? result.content : '',
+    description: result.title || 'Visual Content',
+    confidence: result.relevance_score || 0,
+    source: result.title || 'Unknown Document',
+  })) || [];
+
+  return {
+    query: rawResponse.query || '',
+    results: visualResults,
+    total: visualResults.length,
+    processing_time: rawResponse.processing_time || 0,
+  };
+}
+
+// Search API functions - Updated for Working Backend with Document Access
 export const searchAPI = {
   /**
-   * Enhanced search with visual content support and real document access
-   * Uses the production server's search endpoint with actual ECSS documents
+   * Enhanced search with real ECSS document content + AI responses
    */
   async search(filters: SearchFilters): Promise<SearchResponse> {
     const params = new URLSearchParams({
       q: filters.query,
-      limit: filters.limit.toString(),
+      limit: filters.limit?.toString() || '8',
     });
 
-    // Production server has real document search capabilities
-    const rawResponse = await apiFetch<any>(`/api/search?${params}`);
+    // Use the working backend with real document search
+    const rawResponse = await apiFetch<any>(`/search?${params}`);
     
-    // Transform the response to match frontend expectations
+    // Transform the new backend format
     return transformSearchResponse(rawResponse);
   },
 
   /**
-   * Visual search - uses the production server's unified search endpoint
-   * Production server includes visual content from actual ECSS documents
+   * Visual search using ColPali - returns diagrams, tables, figures
    */
   async searchVisual(filters: VisualSearchFilters): Promise<VisualSearchResponse> {
     const params = new URLSearchParams({
       q: filters.query,
-      limit: filters.limit.toString(),
+      k: filters.limit.toString(),
     });
 
-    // Use the production search endpoint with ColPali support
-    const rawResponse = await apiFetch<any>(`/api/search?${params}`);
+    // Use the working backend with ColPali visual processing
+    const rawResponse = await apiFetch<any>(`/search?${params}`);
     return transformVisualSearchResponse(rawResponse);
   },
 };
 
-// Document management API functions - AVAILABLE in production server
-export const documentsAPI = {
-  /**
-   * Get list of all ingested documents - AVAILABLE in production server
-   */
-  async getDocuments(): Promise<DocumentsResponse> {
-    return apiFetch<DocumentsResponse>('/api/documents');
-  },
-
-  /**
-   * Get chunks for a specific document - AVAILABLE in production server
-   */
-  async getDocumentChunks(documentId: string, limit: number = 20): Promise<DocumentChunksResponse> {
-    const params = new URLSearchParams({
-      limit: limit.toString(),
-    });
-    
-    return apiFetch<DocumentChunksResponse>(`/api/documents/${documentId}/chunks?${params}`);
-  },
-};
-
-// Ingestion API functions - AVAILABLE in production server
-export const ingestionAPI = {
-  /**
-   * Ingest a single document - AVAILABLE in production server
-   */
-  async ingestDocument(filePath: string): Promise<IngestionResult> {
-    return apiFetch<IngestionResult>('/api/ingest', {
-      method: 'POST',
-      body: JSON.stringify({ file_path: filePath }),
-    });
-  },
-
-  /**
-   * Batch ingest documents - AVAILABLE in production server
-   */
-  async batchIngest(request: BatchIngestionRequest): Promise<BatchIngestionResponse> {
-    return apiFetch<BatchIngestionResponse>('/api/ingest/batch', {
-      method: 'POST',
-      body: JSON.stringify(request),
-    });
-  },
-};
-
-// System monitoring API functions - Updated for production server
+// System monitoring API functions - Updated for working backend
 export const systemAPI = {
   /**
-   * Health check - Uses standard /api/health endpoint
-   */
-  async getHealth(): Promise<{ status: string; timestamp: string }> {
-    return apiFetch<{ status: string; timestamp: string }>('/api/health');
-  },
-
-  /**
-   * System status - Uses /api/status endpoint (production server)
+   * System status - Uses working backend status endpoint
    */
   async getStatus(): Promise<SystemStatusResponse> {
-    return apiFetch<SystemStatusResponse>('/api/status');
+    return apiFetch<SystemStatusResponse>('/status');
   },
 
   /**
-   * System capabilities - Not available in production server, use status
+   * System capabilities - Available in working backend
    */
   async getCapabilities(): Promise<any> {
-    // Production server doesn't have capabilities endpoint
-    return this.getStatus();
+    return apiFetch<any>('/capabilities');
   },
 
   /**
-   * System stats - AVAILABLE in production server
+   * Health check
    */
-  async getStats(): Promise<SystemStatsResponse> {
-    return apiFetch<SystemStatsResponse>('/api/stats');
+  async getHealth(): Promise<{ status: string; timestamp: string }> {
+    // Use the health endpoint without /working prefix for basic health
+    const url = `${API_BASE_URL}/api/health`;
+    const response = await fetch(url);
+    return response.json();
   },
 };
 
-// Transform backend response to frontend format
-function transformSearchResponse(rawResponse: any): SearchResponse {
-  // Handle new foundation system response format
-  if (rawResponse.results && rawResponse.results.length > 0 && rawResponse.results[0].content && rawResponse.results[0].summary) {
-    // New foundation system format - use directly
-    return {
-      query: rawResponse.query || '',
-      results: rawResponse.results || [],
-      total_results: rawResponse.total_results || rawResponse.total || 0,
-      visual_results: rawResponse.visual_results || 0,
-      text_results: rawResponse.text_results || 0,
-      contextual_response: rawResponse.contextual_response || undefined,
-      processing_time: rawResponse.processing_time || 0,
-      timestamp: rawResponse.timestamp || new Date().toISOString(),
-    };
-  }
-  
-  // Legacy format transformation for old backend
-  const results = rawResponse.results?.map((item: any) => ({
-    content: item.content || 'No content available',
-    summary: item.metadata?.document_name || 'No summary available',
-    relevance_score: item.score || item.metadata?.score || 0,
-    document_info: {
-      filename: item.metadata?.document_name || 'Unknown document',
-      chunk_number: item.metadata?.chunk_id || 0,
-      document_id: item.metadata?.external_id || item.id || 'unknown',
-    },
-    source_type: item.metadata?.source_type || 'Information',
-    explanation: item.metadata?.explanation || 'No explanation available',
-    visual_elements: item.metadata?.visual_elements || 0,
-    is_visual_content: item.metadata?.is_visual_content || false,
-  })) || [];
+// Document and ingestion APIs - Not available in working backend, provide fallbacks
+export const documentsAPI = {
+  async getDocuments(): Promise<DocumentsResponse> {
+    throw new Error("Document listing not available in working backend. Use search functionality instead.");
+  },
 
-  return {
-    query: rawResponse.query || '',
-    results,
-    total_results: rawResponse.total || 0,
-    visual_results: results.filter((r: any) => r.is_visual_content).length,
-    text_results: results.filter((r: any) => !r.is_visual_content).length,
-    contextual_response: rawResponse.summary || undefined,
-    processing_time: rawResponse.processing_time || 0,
-    timestamp: rawResponse.timestamp || new Date().toISOString(),
-  };
-}
+  async getDocumentChunks(documentId: string, limit: number = 20): Promise<DocumentChunksResponse> {
+    throw new Error("Document chunks not available in working backend. Use search functionality instead.");
+  },
+};
 
-// Transform backend response to visual search format
-function transformVisualSearchResponse(rawResponse: any): VisualSearchResponse {
-  const results = rawResponse.results?.map((item: any) => ({
-    content: item.content || 'No content available',
-    summary: item.metadata?.document_name || 'No summary available',
-    relevance_score: item.score || item.metadata?.score || 0,
-    document_info: {
-      filename: item.metadata?.document_name || 'Unknown document',
-      chunk_number: item.metadata?.chunk_id || 0,
-      document_id: item.metadata?.external_id || item.id || 'unknown',
-    },
-    source_type: item.metadata?.source_type || 'Information',
-    explanation: item.metadata?.explanation || 'No explanation available',
-    visual_elements: item.metadata?.visual_elements || 0,
-    is_visual_content: item.metadata?.is_visual_content || false,
-  })) || [];
+export const ingestionAPI = {
+  async ingestDocument(filePath: string): Promise<IngestionResult> {
+    throw new Error("Document ingestion not available in working backend");
+  },
 
-  return {
-    query: rawResponse.query || '',
-    visual_results: results,
-    total_visual_results: rawResponse.total || 0,
-    processing_time: rawResponse.processing_time || 0,
-    timestamp: rawResponse.timestamp || new Date().toISOString(),
-  };
-}
+  async batchIngest(request: BatchIngestionRequest): Promise<BatchIngestionResponse> {
+    throw new Error("Batch ingestion not available in working backend");
+  },
+};
 
 // Utility functions
 export const apiUtils = {
@@ -259,7 +275,7 @@ export const apiUtils = {
    * Get API base URL
    */
   getBaseUrl(): string {
-    return API_CONFIG.baseUrl;
+    return API_BASE_URL;
   },
 
   /**

@@ -3,41 +3,47 @@
  * These types match the backend foundation system responses
  */
 
-// Core search result type matching backend SearchResult
+// Search result from working backend with both AI and document content
 export interface SearchResult {
-  content?: string;
-  summary?: string;
-  relevance_score?: number;
-  document_info?: {
-    filename?: string;
-    chunk_number?: number;
-    document_id?: string;
+  id: string;
+  title: string;
+  content: string;
+  score: number;
+  source: string;
+  metadata?: {
+    method?: string;
+    processing_time?: number;
+    is_visual?: boolean;
+    image_url?: string;
+    document_name?: string;
   };
-  source_type?: string;
-  explanation?: string;
-  visual_elements?: number;
-  is_visual_content?: boolean;
 }
 
-// Enhanced search response from backend
+// Enhanced search response with AI and document results separated
 export interface SearchResponse {
   query: string;
   results: SearchResult[];
-  total_results: number;
-  visual_results: number;
-  text_results: number;
-  contextual_response?: string;
+  total: number;
+  ai_response?: string; // AI contextual response
   processing_time: number;
-  timestamp: string;
+  methods_used: string[];
 }
 
-// Visual search specific response
+// Visual search result from ColPali processing
+export interface VisualResult {
+  id: string;
+  image_url: string;
+  description: string;
+  confidence: number;
+  source: string;
+}
+
+// Visual search response
 export interface VisualSearchResponse {
   query: string;
-  visual_results: SearchResult[];
-  total_visual_results: number;
+  results: VisualResult[];
+  total: number;
   processing_time: number;
-  timestamp: string;
 }
 
 // Document information
@@ -81,20 +87,19 @@ export interface DocumentChunksResponse {
   timestamp: string;
 }
 
-// System status response - Updated for production server
+// System status response - Updated for working backend
 export interface SystemStatusResponse {
-  status: string;
-  timestamp: string;
-  morphik_connected: boolean;
-  colpali_enabled: boolean;
-  stats: {
-    total_processed: number;
-    successful: number;
-    failed: number;
-    visual_chunks_created: number;
-    text_chunks_created: number;
-    total_cost: number;
+  connection: string;
+  features: {
+    agent_query: boolean;
+    batch_operations: boolean;
+    colpali_visual: boolean;
+    document_access: boolean;
+    knowledge_graphs: boolean;
+    standard_query: boolean;
   };
+  system: string;
+  timestamp: number;
 }
 
 // System statistics response
