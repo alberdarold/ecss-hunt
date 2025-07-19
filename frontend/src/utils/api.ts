@@ -169,6 +169,22 @@ export const systemAPI = {
 
 // Transform backend response to frontend format
 function transformSearchResponse(rawResponse: any): SearchResponse {
+  // Handle new foundation system response format
+  if (rawResponse.results && rawResponse.results.length > 0 && rawResponse.results[0].content && rawResponse.results[0].summary) {
+    // New foundation system format - use directly
+    return {
+      query: rawResponse.query || '',
+      results: rawResponse.results || [],
+      total_results: rawResponse.total_results || rawResponse.total || 0,
+      visual_results: rawResponse.visual_results || 0,
+      text_results: rawResponse.text_results || 0,
+      contextual_response: rawResponse.contextual_response || undefined,
+      processing_time: rawResponse.processing_time || 0,
+      timestamp: rawResponse.timestamp || new Date().toISOString(),
+    };
+  }
+  
+  // Legacy format transformation for old backend
   const results = rawResponse.results?.map((item: any) => ({
     content: item.content || 'No content available',
     summary: item.metadata?.document_name || 'No summary available',
