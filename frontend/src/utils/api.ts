@@ -58,76 +58,86 @@ async function apiFetch<T>(
   return response.json();
 }
 
-// Search API functions - Updated for Production Working API
+// Search API functions - Updated for Production API Server with Document Access
 export const searchAPI = {
   /**
-   * Enhanced search with visual content support
-   * Uses the working backend's unified search endpoint
+   * Enhanced search with visual content support and real document access
+   * Uses the production server's search endpoint with actual ECSS documents
    */
   async search(filters: SearchFilters): Promise<SearchResponse> {
     const params = new URLSearchParams({
       q: filters.query,
-      k: filters.limit.toString(),
+      limit: filters.limit.toString(),
     });
 
-    // Our working backend includes both text and visual search in one endpoint
-    const rawResponse = await apiFetch<any>(`/api/working/search?${params}`);
+    // Production server has real document search capabilities
+    const rawResponse = await apiFetch<any>(`/api/search?${params}`);
     
     // Transform the response to match frontend expectations
     return transformSearchResponse(rawResponse);
   },
 
   /**
-   * Visual search - uses the same endpoint as regular search
-   * Our working backend combines both text and visual search
+   * Visual search - uses the production server's unified search endpoint
+   * Production server includes visual content from actual ECSS documents
    */
   async searchVisual(filters: VisualSearchFilters): Promise<VisualSearchResponse> {
     const params = new URLSearchParams({
       q: filters.query,
-      k: filters.limit.toString(),
+      limit: filters.limit.toString(),
     });
 
-    // Use the unified search endpoint (includes visual via ColPali)
-    const rawResponse = await apiFetch<any>(`/api/working/search?${params}`);
+    // Use the production search endpoint with ColPali support
+    const rawResponse = await apiFetch<any>(`/api/search?${params}`);
     return transformVisualSearchResponse(rawResponse);
   },
 };
 
-// Document management API functions - LIMITED AVAILABILITY in working backend
+// Document management API functions - AVAILABLE in production server
 export const documentsAPI = {
   /**
-   * Get list of all ingested documents - NOT AVAILABLE in working backend
+   * Get list of all ingested documents - AVAILABLE in production server
    */
   async getDocuments(): Promise<DocumentsResponse> {
-    throw new Error("Document listing not available in working backend. Use search functionality instead.");
+    return apiFetch<DocumentsResponse>('/api/documents');
   },
 
   /**
-   * Get chunks for a specific document - NOT AVAILABLE in working backend
+   * Get chunks for a specific document - AVAILABLE in production server
    */
   async getDocumentChunks(documentId: string, limit: number = 20): Promise<DocumentChunksResponse> {
-    throw new Error("Document chunks not available in working backend. Use search functionality instead.");
+    const params = new URLSearchParams({
+      limit: limit.toString(),
+    });
+    
+    return apiFetch<DocumentChunksResponse>(`/api/documents/${documentId}/chunks?${params}`);
   },
 };
 
-// Ingestion API functions - NOT AVAILABLE in working backend
+// Ingestion API functions - AVAILABLE in production server
 export const ingestionAPI = {
   /**
-   * Ingest a single document - NOT AVAILABLE in working backend
+   * Ingest a single document - AVAILABLE in production server
    */
   async ingestDocument(filePath: string): Promise<IngestionResult> {
-    throw new Error("Document ingestion not available in working backend");
+    return apiFetch<IngestionResult>('/api/ingest', {
+      method: 'POST',
+      body: JSON.stringify({ file_path: filePath }),
+    });
   },
 
   /**
-   * Batch ingest documents - NOT AVAILABLE in working backend
+   * Batch ingest documents - AVAILABLE in production server
    */
   async batchIngest(request: BatchIngestionRequest): Promise<BatchIngestionResponse> {
-    throw new Error("Batch ingestion not available in working backend");
+    return apiFetch<BatchIngestionResponse>('/api/ingest/batch', {
+      method: 'POST',
+      body: JSON.stringify(request),
+    });
   },
 };
 
-// System monitoring API functions - Updated for working backend
+// System monitoring API functions - Updated for production server
 export const systemAPI = {
   /**
    * Health check - Uses standard /api/health endpoint
@@ -137,24 +147,25 @@ export const systemAPI = {
   },
 
   /**
-   * System status - Uses /api/working/status endpoint
+   * System status - Uses /api/status endpoint (production server)
    */
   async getStatus(): Promise<SystemStatusResponse> {
-    return apiFetch<SystemStatusResponse>('/api/working/status');
+    return apiFetch<SystemStatusResponse>('/api/status');
   },
 
   /**
-   * System capabilities - Available in working backend
+   * System capabilities - Not available in production server, use status
    */
   async getCapabilities(): Promise<any> {
-    return apiFetch<any>('/api/working/capabilities');
+    // Production server doesn't have capabilities endpoint
+    return this.getStatus();
   },
 
   /**
-   * System stats - NOT AVAILABLE in working backend
+   * System stats - AVAILABLE in production server
    */
   async getStats(): Promise<SystemStatsResponse> {
-    throw new Error("Detailed system statistics not available in working backend. Use status endpoint instead.");
+    return apiFetch<SystemStatsResponse>('/api/stats');
   },
 };
 

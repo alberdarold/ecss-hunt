@@ -67,12 +67,12 @@ export default function ECSSFoundationApp() {
 
   const checkSystemStatus = async () => {
     try {
-      // Get status from working backend
+      // Get status from production server
       const status = await systemAPI.getStatus();
       setSystemStatus(status);
-      setIsConnected(status.connection === 'connected');
+      setIsConnected(status.status === 'online' && status.morphik_connected);
       
-      console.log('✅ Working backend connected:', status);
+      console.log('✅ Production server connected:', status);
     } catch (error) {
       console.error('System status check failed:', error);
       setIsConnected(false);
@@ -219,8 +219,8 @@ export default function ECSSFoundationApp() {
               
               {systemStatus && (
                 <div className="text-xs text-gray-500 dark:text-gray-400 text-right">
-                  <div>System: {systemStatus.system}</div>
-                  <div>ColPali: {systemStatus.features?.colpali_visual ? 'Available' : 'Unavailable'}</div>
+                  <div>Status: {systemStatus.status}</div>
+                  <div>ColPali: {systemStatus.colpali_enabled ? 'Enabled' : 'Disabled'}</div>
                 </div>
               )}
             </div>
