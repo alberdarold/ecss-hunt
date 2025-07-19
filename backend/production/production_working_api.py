@@ -94,69 +94,9 @@ class ProductionWorkingAPI:
                 
                 # Get document chunks (PRIORITIZE TEXT CONTENT)
                 try:
-                    # For specific requirements like "3.2.20 response", use direct document queries instead of chunks
-                    if any(char.isdigit() for char in query):  # If query contains numbers (like 3.2.20)
-                        # Use direct document query to get PRECISE requirements
-                        logger.info(f"Searching for specific requirement: '{query}'")
-                        
-                        # Try multiple specific queries to get the exact requirement
-                        specific_queries = [
-                            f"Find the exact definition of {query}",
-                            f"Extract the text containing {query}",
-                            f"What is {query} in ECSS documents?",
-                            f"Show me the requirement {query}"
-                        ]
-                    else:
-                        # For general queries, also try direct queries for better precision
-                        logger.info(f"Searching for general query: '{query}'")
-                        
-                        # Try multiple approaches for general queries too
-                        specific_queries = [
-                            f"Find information about {query}",
-                            f"What does {query} mean in ECSS context?",
-                            f"Extract content related to {query}",
-                            f"Show me sections about {query}"
-                        ]
-                    
-                    chunks = []  # We'll create results from direct queries instead
-                    direct_results = []
-                    
-                    for i, specific_query in enumerate(specific_queries):
-                        try:
-                            response = self.morphik_system.db.query(specific_query, use_colpali=False)
-                            if response and response.completion and len(response.completion) > 50:
-                                # Check if response contains the actual requirement
-                                if query.lower() in response.completion.lower():
-                                    direct_results.append({
-                                        'content': response.completion[:1500],
-                                        'query_used': specific_query,
-                                        'index': i
-                                    })
-                                    logger.info(f"Found precise requirement with query '{specific_query}': {len(response.completion)} chars")
-                        except Exception as e:
-                            logger.warning(f"Direct query failed: {e}")
-                    
-                    # Create synthetic chunks from direct query results
-                    for i, result in enumerate(direct_results[:3]):  # Limit to 3 results
-                        # Create a synthetic chunk object
-                        class SyntheticChunk:
-                            def __init__(self, content, index):
-                                self.content = content
-                                self.chunk_number = index + 1
-                                self.score = 0.9 - (index * 0.1)  # Decreasing relevance
-                                self.filename = "ECSS Document"
-                                self.document_id = f"direct_query_{index}"
-                        
-                        chunks.append(SyntheticChunk(result['content'], i))
-                    
-                    # If no direct results, fall back to chunk retrieval but with REAL scoring
-                    if not chunks:
-                        logger.info("No direct query results, falling back to chunk retrieval with real scoring")
-                        fallback_chunks = self.morphik_system.db.retrieve_chunks(query, k=10, use_colpali=False)
-                        chunks = fallback_chunks
-                    
-                    logger.info(f"Created {len(chunks)} synthetic chunks from direct queries")
-                    
+                    # Use simple, reliable chunk retrieval for ALL queries
+                    chunks = self.morphik_system.db.retrieve_chunks(query, k=8, use_colpali=False)
+                    logger.info(f"Retrieved {len(chunks)} chunks for query: '{query}'")
                 except Exception as e:
                     logger.error(f"Failed to retrieve chunks: {e}")
                     chunks = []
@@ -206,62 +146,24 @@ class ProductionWorkingAPI:
                                         content = val
                                         break
                         
-                        # For synthetic chunks (from direct queries), content is already precise
-                        # For regular chunks, try to get better content if needed
+                        # Try to get better content if current content is insufficient
                         if not content or len(content) < 50:
                             try:
-                                # Only for regular chunks, try alternative methods
-                                if not document_id.startswith('direct_query_'):
-                                    # Try to get PRECISE requirements using targeted queries
-                                    precise_query = f"Find the exact requirement or definition for: {query}"
-                                    doc_response = self.morphik_system.db.query(precise_query, use_colpali=False)
-                                    if doc_response and doc_response.completion and len(doc_response.completion) > 100:
-                                        # Check if response contains the actual requirement, not just description
-                                        response_text = doc_response.completion
-                                        if query.lower() in response_text.lower() or any(term in response_text for term in query.split()):
-                                            content = response_text[:1500]
-                                            logger.info(f"Got precise ECSS requirement: {len(content)} chars")
-                                
-                                # Method 2: Try with document ID if available (only for regular chunks)
-                                elif document_id != f'doc_{i}' and not document_id.startswith('direct_query_'):
-                                    try:
-                                        doc_obj = self.morphik_system.db.get_document(document_id)
-                                        if doc_obj and hasattr(doc_obj, 'content'):
-                                            doc_content = str(doc_obj.content)
-                                            if len(doc_content) > 100:
-                                                content = doc_content[:1500]
-                                                logger.info(f"Got document content: {len(content)} chars")
-                                    except Exception as e:
-                                        logger.warning(f"Failed to get document content: {e}")
-                                
+                                # Try to get better content using document query
+                                better_query = f"Find information about {query}"
+                                doc_response = self.morphik_system.db.query(better_query, use_colpali=False)
+                                if doc_response and doc_response.completion and len(doc_response.completion) > 100:
+                                    content = doc_response.completion[:1500]
+                                    logger.info(f"Got better content: {len(content)} chars")
                             except Exception as e:
-                                logger.warning(f"Failed to get alternative text content: {e}")
+                                logger.warning(f"Failed to get better content: {e}")
                         
                         # Skip this result if we can't get real text content
                         if not content or len(content) < 50:
                             logger.warning(f"Skipping chunk {i} - no meaningful text content found")
                             continue
                         
-                        # For synthetic chunks (direct queries), content is already validated
-                        # For regular chunks, validate content quality
-                        if not document_id.startswith('direct_query_'):
-                            content_lower = content.lower()
-                            if any(char.isdigit() for char in query):  # If searching for numbered requirements
-                                # Check if content contains the specific requirement number
-                                query_terms = query.lower().split()
-                                if not any(term in content_lower for term in query_terms):
-                                    logger.warning(f"Chunk {i} doesn't contain the specific requirement '{query}' - may be general description")
-                                    # Try to get more specific content
-                                    try:
-                                        specific_query = f"Find the exact text containing {query}"
-                                        specific_response = self.morphik_system.db.query(specific_query, use_colpali=False)
-                                        if specific_response and specific_response.completion:
-                                            specific_content = specific_response.completion
-                                            if query.lower() in specific_content.lower():
-                                                content = specific_content[:1500]
-                                                logger.info(f"Got specific requirement content: {len(content)} chars")
-                                    except Exception as e:
-                                        logger.warning(f"Failed to get specific requirement: {e}")
+
                         
                         # Limit content length for faster processing (first 1500 chars for better context)
                         if len(content) > 1500:
@@ -270,21 +172,14 @@ class ProductionWorkingAPI:
                         # Fast document info extraction
                         filename = getattr(chunk, 'filename', f'ECSS Document {i+1}')
                         
-                        # REAL scoring - use actual relevance scores for ALL queries
+                        # Simple, reliable scoring
                         raw_score = getattr(chunk, 'score', 0.0)
+                        score = min(raw_score * 100, 100.0)  # Cap at 100%
                         
-                        # For synthetic chunks (direct queries), use high scores
-                        if document_id.startswith('direct_query_'):
-                            score = min(raw_score * 100, 100.0)
-                        else:
-                            # For regular chunks, use REAL scores without arbitrary filtering
-                            score = raw_score * 100
-                            
-                            # Only filter out extremely low relevance (below 10%) to allow variety
-                            # This works for ANY query, not just specific examples
-                            if score < 10.0:
-                                logger.info(f"Skipping chunk {i} - extremely low relevance score: {score:.1f}%")
-                                continue
+                        # Only filter out very low relevance (below 5%) to allow variety
+                        if score < 5.0:
+                            logger.info(f"Skipping chunk {i} - very low relevance score: {score:.1f}%")
+                            continue
                         
                         document_id = getattr(chunk, 'document_id', f'doc_{i}')
                         # Try to get actual PDF page number, not just chunk processing order
