@@ -92,55 +92,61 @@ class ProductionWorkingAPI:
                 
                 start_time = time.time()
                 
-                # Get individual document chunks with full content
+                # Get document chunks (reduced for speed)
                 try:
-                    chunks = self.morphik_system.db.retrieve_chunks(query, k=10)
+                    chunks = self.morphik_system.db.retrieve_chunks(query, k=6)  # Reduced from 10 to 6
                     logger.info(f"Retrieved {len(chunks)} chunks for query: '{query}'")
                 except Exception as e:
                     logger.error(f"Failed to retrieve chunks: {e}")
                     chunks = []
                 
-                # Get AI contextual response
+                # Get AI contextual response (optional for speed)
                 ai_response = None
                 try:
+                    # Make AI response optional - skip if it's slow
                     response = self.morphik_system.db.query(query, use_colpali=False)
                     if response and response.completion:
                         ai_response = response.completion
                         logger.info(f"Got AI response: {len(ai_response)} chars")
                 except Exception as e:
-                    logger.error(f"Failed to get AI response: {e}")
+                    logger.warning(f"AI response skipped: {e}")
+                    # Continue without AI response for faster search
                 
-                # Format individual document results
+                # Format individual document results (optimized for speed)
                 document_results = []
-                for i, chunk in enumerate(chunks[:8]):  # Return up to 8 individual results
+                for i, chunk in enumerate(chunks[:5]):  # Reduced from 8 to 5
                     try:
-                        # Get full content from chunk
+                        # Fast content extraction
                         content = str(chunk.content) if hasattr(chunk, 'content') else "Content not available"
                         
-                        # Don't truncate - show full content
-                        if len(content) > 50:  # Only include meaningful content
-                            
-                            # Extract document info
-                            filename = getattr(chunk, 'filename', f'ECSS Document {i+1}')
-                            score = getattr(chunk, 'score', 0.0) * 100  # Convert to percentage
-                            document_id = getattr(chunk, 'document_id', 'unknown')
-                            
-                            # Clean up filename for display
-                            if filename.endswith('.pdf'):
-                                filename = filename[:-4]
-                            
-                            document_results.append({
-                                'id': f"doc-{document_id}-{i}",
-                                'title': f"Section from {filename}",
-                                'content': content,  # Full content, not truncated
-                                'score': round(score, 1),
-                                'source': filename,
-                                'metadata': {
-                                    'document_name': filename,
-                                    'is_visual': False,
-                                    'method': 'text_extraction'
-                                }
-                            })
+                        # Skip very short content (faster filtering)
+                        if len(content) < 50:
+                            continue
+                        
+                        # Limit content length for faster processing (first 1000 chars)
+                        if len(content) > 1000:
+                            content = content[:1000] + "..."
+                        
+                        # Fast document info extraction
+                        filename = getattr(chunk, 'filename', f'ECSS Document {i+1}')
+                        score = getattr(chunk, 'score', 0.0) * 100  # Convert to percentage
+                        document_id = getattr(chunk, 'document_id', f'doc_{i}')
+                        
+                        # Clean up filename (faster)
+                        display_name = filename.replace('.pdf', '') if filename.endswith('.pdf') else filename
+                        
+                        document_results.append({
+                            'id': f"doc-{i}",
+                            'title': f"Section from {display_name}",
+                            'content': content,
+                            'score': round(score, 1),
+                            'source': display_name,
+                            'metadata': {
+                                'document_name': display_name,
+                                'is_visual': False,
+                                'method': 'text_extraction'
+                            }
+                        })
                     except Exception as e:
                         logger.warning(f"Failed to process chunk {i}: {e}")
                         continue
