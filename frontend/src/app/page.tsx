@@ -278,7 +278,7 @@ export default function ECSSFoundationApp() {
                           showVisualOnly ? handleVisualSearch(searchState.query) : handleSearch(searchState.query);
                         }
                       }}
-                      className="w-full pl-10 pr-4 py-4 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white text-lg"
+                      className="w-full pl-10 pr-4 py-4 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white text-lg text-gray-900 dark:text-gray-100"
                     />
                   </div>
 
@@ -466,26 +466,45 @@ export default function ECSSFoundationApp() {
             </div>
           )}
 
-            {/* Enhanced Contextual Response */}
+            {/* AI Response Section */}
             {searchState.contextualResponse && (
-              <div className="max-w-6xl mx-auto">
-                <div className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-6">
+              <div className="max-w-6xl mx-auto mb-6">
+                <div className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 border border-blue-200 dark:border-blue-800 rounded-xl p-6 shadow-lg">
                   <div className="flex items-start space-x-3">
-                    <div className="flex-shrink-0 w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center">
+                    <div className="flex-shrink-0 w-10 h-10 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-full flex items-center justify-center">
                       <BrainIcon />
                     </div>
-                    <div>
-                      <h4 className="font-semibold text-blue-900 dark:text-blue-100 mb-2">
-                        AI-Powered Contextual Summary
+                    <div className="flex-1">
+                      <h4 className="font-semibold text-blue-900 dark:text-blue-100 mb-3 text-lg">
+                        🤖 AI Analysis & Summary
                       </h4>
-                      <p className="text-blue-800 dark:text-blue-200 text-sm leading-relaxed">
-                        {searchState.contextualResponse}
-                      </p>
+                      <div className="text-blue-800 dark:text-blue-200 leading-relaxed prose prose-sm">
+                        {searchState.contextualResponse
+                          .replace(/\*\*/g, '') 
+                          .replace(/\*/g, '')
+                          .replace(/\n\n/g, '\n')
+                          .split('\n')
+                          .filter(line => line.trim())
+                          .map((line, index) => {
+                            if (line.trim().match(/^\d+\./)) {
+                              return (
+                                <div key={index} className="mb-2 pl-4">
+                                  <span className="font-medium">{line.trim()}</span>
+                                </div>
+                              );
+                            }
+                            return (
+                              <p key={index} className="mb-3">
+                                {line.trim()}
+                              </p>
+                            );
+                          })}
+                      </div>
+                    </div>
+                  </div>
+                </div>
               </div>
-            </div>
-            </div>
-            </div>
-          )}
+            )}
 
             {/* Search Results List */}
             {displayResults.length > 0 && (
@@ -529,35 +548,43 @@ export default function ECSSFoundationApp() {
                     </div>
                   </div>
                   
-            {/* Results List */}
+            {/* Specific Search Results */}
             <div className="space-y-4">
+              <div className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-4">
+                📋 Specific Matches ({displayResults.length} found)
+              </div>
               {displayResults.map((result, index) => (
                 <div
                   key={index}
-                  className={`bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 card-hover ${
-                    (result.is_visual_content === true) ? 'visual-indicator' : ''
+                  className={`bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 p-6 hover:shadow-xl transition-shadow ${
+                    (result.is_visual_content === true) ? 'border-l-4 border-l-purple-500' : 'border-l-4 border-l-blue-500'
                   }`}
                 >
-                  <div className="flex items-start justify-between mb-3">
+                  <div className="flex items-start justify-between mb-4">
                     <div className="flex items-center space-x-3">
+                      {/* Percentage Score Badge */}
+                      <div className={`px-3 py-2 rounded-lg text-sm font-bold ${
+                        (result.relevance_score || 0) >= 0.8 
+                          ? 'bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200'
+                          : (result.relevance_score || 0) >= 0.6
+                          ? 'bg-yellow-100 dark:bg-yellow-900 text-yellow-800 dark:text-yellow-200'
+                          : 'bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-200'
+                      }`}>
+                        {result.relevance_score ? `${(result.relevance_score * 100).toFixed(0)}%` : 'N/A'}
+                      </div>
+                      
                       <div className={`px-3 py-1 rounded-full text-xs font-medium ${
                         apiUtils.getSourceTypeColor(result.source_type || 'Information')
                       }`}>
                         {result.source_type || 'Information'}
                       </div>
                       
-                                                                   {(result.is_visual_content === true) && (
+                      {(result.is_visual_content === true) && (
                         <div className="flex items-center space-x-1 px-2 py-1 bg-purple-100 dark:bg-purple-900 text-purple-800 dark:text-purple-200 rounded-full text-xs">
                           <EyeIcon />
                           <span>Visual</span>
-                      </div>
-                    )}
-                    
-                      <div className={`text-sm font-medium ${
-                        apiUtils.getRelevanceScoreColor(result.relevance_score || 0)
-                      }`}>
-                        {result.relevance_score ? result.relevance_score.toFixed(1) : 'N/A'}
-                      </div>
+                        </div>
+                      )}
                     </div>
                     
                     <div className="text-xs text-gray-500 dark:text-gray-400">
@@ -565,25 +592,30 @@ export default function ECSSFoundationApp() {
                     </div>
                   </div>
 
-                  <div className="mb-3">
-                    <h3 className="font-semibold text-gray-900 dark:text-white mb-2">
-                      {result.summary || 'No summary available'}
+                  <div className="mb-4">
+                    <h3 className="font-semibold text-gray-900 dark:text-white mb-2 text-lg">
+                      {result.summary || 'Matched Content'}
                     </h3>
-                    <p className="text-gray-600 dark:text-gray-300 text-sm leading-relaxed">
-                      {result.content || 'No content available'}
+                    <p className="text-gray-600 dark:text-gray-300 leading-relaxed">
+                      {result.content ? 
+                        result.content.length > 300 
+                          ? `${result.content.substring(0, 300)}...` 
+                          : result.content
+                        : 'No content available'
+                      }
                     </p>
                   </div>
 
-                  <div className="border-t border-gray-200 dark:border-gray-700 pt-3">
-                    <div className="flex items-center justify-between">
-                      <p className="text-xs text-gray-500 dark:text-gray-400">
-                        {result.explanation || 'No explanation available'}
-                      </p>
-                      <div className="text-xs text-gray-500 dark:text-gray-400">
-                        Chunk #{result.document_info?.chunk_number || 'N/A'}
+                  {result.explanation && (
+                    <div className="border-t border-gray-200 dark:border-gray-700 pt-3">
+                      <div className="flex items-start space-x-2">
+                        <span className="text-xs text-gray-500 dark:text-gray-400 font-medium">Match reason:</span>
+                        <p className="text-xs text-gray-600 dark:text-gray-400 flex-1">
+                          {result.explanation}
+                        </p>
                       </div>
                     </div>
-                  </div>
+                  )}
                 </div>
               ))}
                         </div>
