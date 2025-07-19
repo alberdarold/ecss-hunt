@@ -158,21 +158,21 @@ export default function ECSSFoundationApp() {
           {searchResults && searchResults.results && searchResults.results.length > 0 && (
             <div className="max-w-6xl mx-auto space-y-6">
               
-              {/* AI Contextual Response Box */}
+              {/* AI Contextual Response Box - Compact Lines */}
               {searchResults.ai_response && (
-                <div className="bg-gray-100 dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg p-4">
+                <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
                   <div className="flex items-center gap-2 mb-2">
-                    <div className="w-2 h-2 bg-gray-600 rounded-full"></div>
-                    <h3 className="text-base font-semibold text-gray-800 dark:text-gray-200">
+                    <div className="w-2 h-2 bg-gray-500 rounded-full"></div>
+                    <h3 className="text-sm font-semibold text-gray-800">
                       🤖 AI Contextual Response
                     </h3>
-                    <span className="text-xs text-gray-600 dark:text-gray-400">
+                    <span className="text-xs text-gray-500">
                       {searchResults.processing_time?.toFixed(1)}s
                     </span>
                   </div>
                   <div 
-                    className="text-sm text-gray-700 dark:text-gray-300 leading-snug space-y-1"
-                    style={{ lineHeight: '1.4' }}
+                    className="text-sm text-gray-700 leading-snug"
+                    style={{ lineHeight: '1.3' }}
                     dangerouslySetInnerHTML={{ __html: searchResults.ai_response }}
                   />
                 </div>
@@ -227,29 +227,14 @@ export default function ECSSFoundationApp() {
                         {result.title || 'ECSS Document Section'}
                       </h4>
                       
-                      {/* Main text content from document */}
+                      {/* Real ECSS Text Content */}
                       <div className="text-gray-700 dark:text-gray-300 leading-relaxed">
-                        {result.content && result.content.trim() ? (
-                          <div className="whitespace-pre-line text-sm leading-relaxed">
-                            {result.content}
-                          </div>
-                        ) : (
-                          <div className="text-gray-500 italic text-sm">
-                            <p>📋 ECSS document section identified</p>
-                            <p>🔍 Content relates to: <span className="font-medium">"{searchResults.query}"</span></p>
-                            <p>📄 Source: {result.source}</p>
-                            <p className="text-xs mt-2">Full text content extraction may still be processing...</p>
-                          </div>
-                        )}
+                        <div className="whitespace-pre-line text-sm leading-normal bg-white p-4 rounded border border-gray-200 shadow-sm">
+                          {result.content}
+                        </div>
                       </div>
                       
-                      {/* Show source document info */}
-                      {result.metadata?.document_name && (
-                        <div className="bg-gray-50 dark:bg-gray-800 p-3 rounded border-l-4 border-blue-300 mt-3">
-                          <p className="text-sm text-gray-600 dark:text-gray-400 font-medium mb-1">Document Source:</p>
-                          <p className="text-sm text-gray-700 dark:text-gray-300">{result.metadata.document_name}</p>
-                        </div>
-                      )}
+
                       
                       {/* Visual content as supplementary (only if no text) */}
                       {(!result.content || result.content.length < 50) && result.metadata?.is_visual && result.metadata?.image_url && (
@@ -266,12 +251,9 @@ export default function ECSSFoundationApp() {
                     </div>
 
                     {/* Metadata Footer */}
-                    <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-600 flex justify-between items-center text-xs text-gray-500 dark:text-gray-400">
+                    <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-600 text-xs text-gray-500 dark:text-gray-400 text-right">
                       <div>
-                        Method: {result.metadata?.method || 'unknown'}
-                      </div>
-                      <div>
-                        Source: {result.source}
+                        {(result.metadata as any)?.page_display || 'Page: N/A'}
                       </div>
                     </div>
                   </div>

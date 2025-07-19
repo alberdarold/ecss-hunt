@@ -92,10 +92,11 @@ class ProductionWorkingAPI:
                 
                 start_time = time.time()
                 
-                # Get document chunks (reduced for speed)
+                # Get document chunks (PRIORITIZE TEXT CONTENT)
                 try:
-                    chunks = self.morphik_system.db.retrieve_chunks(query, k=6)  # Reduced from 10 to 6
-                    logger.info(f"Retrieved {len(chunks)} chunks for query: '{query}'")
+                    # Force TEXT content retrieval, not visual content
+                    chunks = self.morphik_system.db.retrieve_chunks(query, k=6, use_colpali=False)  # NO ColPali = text only
+                    logger.info(f"Retrieved {len(chunks)} TEXT chunks for query: '{query}'")
                 except Exception as e:
                     logger.error(f"Failed to retrieve chunks: {e}")
                     chunks = []
@@ -116,29 +117,62 @@ class ProductionWorkingAPI:
                 document_results = []
                 for i, chunk in enumerate(chunks[:5]):  # Reduced from 8 to 5
                     try:
-                        # Enhanced content extraction - try multiple attributes
+                        # TEXT-ONLY content extraction - NO visual content
                         content = ""
                         
-                        # Try different content attributes
+                        # Only extract TEXT content, skip visual content
                         if hasattr(chunk, 'content') and chunk.content:
-                            content = str(chunk.content)
-                        elif hasattr(chunk, 'text') and chunk.text:
-                            content = str(chunk.text)
-                        elif hasattr(chunk, 'data') and chunk.data:
-                            content = str(chunk.data)
-                        else:
-                            # Try to extract from metadata if available
-                            if hasattr(chunk, '__dict__'):
-                                for attr in ['content', 'text', 'data', 'body']:
-                                    if hasattr(chunk, attr):
-                                        val = getattr(chunk, attr)
-                                        if val and len(str(val)) > 50:
-                                            content = str(val)
-                                            break
+                            content_val = chunk.content
+                            # Skip if it's visual content (PIL Image, base64, etc.)
+                            if hasattr(content_val, 'size'):  # PIL Image
+                                content = ""  # Skip visual content
+                            elif isinstance(content_val, str) and content_val.startswith('data:image'):
+                                content = ""  # Skip base64 images
+                            else:
+                                content = str(content_val)
                         
-                        # If still no content, create a meaningful placeholder
+                        # Try text attribute if content is empty/visual
+                        if not content and hasattr(chunk, 'text') and chunk.text:
+                            content = str(chunk.text)
+                        
+                        # Try other text attributes
+                        if not content:
+                            for attr in ['data', 'body', 'text_content']:
+                                if hasattr(chunk, attr):
+                                    val = getattr(chunk, attr)
+                                    if val and isinstance(val, str) and len(val) > 50:
+                                        content = val
+                                        break
+                        
+                        # If STILL no text content, try alternative methods to get REAL ECSS text
                         if not content or len(content) < 50:
-                            content = f"ECSS document section found but full text content not available. This section relates to your search query about '{query}' and contains relevant technical specifications."
+                            try:
+                                # Try to get REAL text using different Morphik methods
+                                # Method 1: Direct document query for requirements
+                                doc_response = self.morphik_system.db.query(f"ECSS requirements {query}", use_colpali=False)
+                                if doc_response and doc_response.completion and len(doc_response.completion) > 100:
+                                    content = doc_response.completion[:1500]
+                                    logger.info(f"Got ECSS requirements text: {len(content)} chars")
+                                
+                                # Method 2: Try with document ID if available
+                                elif document_id != f'doc_{i}':
+                                    try:
+                                        doc_obj = self.morphik_system.db.get_document(document_id)
+                                        if doc_obj and hasattr(doc_obj, 'content'):
+                                            doc_content = str(doc_obj.content)
+                                            if len(doc_content) > 100:
+                                                content = doc_content[:1500]
+                                                logger.info(f"Got document content: {len(content)} chars")
+                                    except Exception as e:
+                                        logger.warning(f"Failed to get document content: {e}")
+                                
+                            except Exception as e:
+                                logger.warning(f"Failed to get alternative text content: {e}")
+                        
+                        # Skip this result if we can't get real text content
+                        if not content or len(content) < 50:
+                            logger.warning(f"Skipping chunk {i} - no meaningful text content found")
+                            continue
                         
                         # Limit content length for faster processing (first 1500 chars for better context)
                         if len(content) > 1500:
@@ -146,14 +180,24 @@ class ProductionWorkingAPI:
                         
                         # Fast document info extraction
                         filename = getattr(chunk, 'filename', f'ECSS Document {i+1}')
-                        score = getattr(chunk, 'score', 0.0) * 100  # Convert to percentage
+                        score = min(getattr(chunk, 'score', 0.0) * 100, 100.0)  # Cap at 100%
                         document_id = getattr(chunk, 'document_id', f'doc_{i}')
+                        # Try to get actual PDF page number, not just chunk processing order
+                        page_number = getattr(chunk, 'page_number', None) or getattr(chunk, 'page', None)
+                        if not page_number:
+                            # Try to extract from metadata if available
+                            chunk_metadata = getattr(chunk, 'metadata', {})
+                            if isinstance(chunk_metadata, dict):
+                                page_number = chunk_metadata.get('page_number') or chunk_metadata.get('page')
+                        
+                        # If still no real page number, use chunk number as fallback
+                        display_page = page_number if page_number else f"Chunk {getattr(chunk, 'chunk_number', i + 1)}"
                         
                         # Clean up filename (faster)
                         display_name = filename.replace('.pdf', '') if filename.endswith('.pdf') else filename
                         
                         # Debug log for content issues
-                        logger.info(f"Chunk {i}: content length = {len(content)}, filename = {filename}")
+                        logger.info(f"Chunk {i}: content length = {len(content)}, filename = {filename}, page = {display_page}")
                         
                         document_results.append({
                             'id': f"doc-{i}",
@@ -164,7 +208,9 @@ class ProductionWorkingAPI:
                             'metadata': {
                                 'document_name': display_name,
                                 'is_visual': False,
-                                'method': 'text_extraction'
+                                'method': 'text_extraction',
+                                'page_display': display_page,
+                                'page_number': page_number
                             }
                         })
                     except Exception as e:
