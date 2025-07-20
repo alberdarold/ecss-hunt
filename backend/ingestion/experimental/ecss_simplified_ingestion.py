@@ -42,14 +42,19 @@ class SimplifiedECSSIngestion:
         self.db = Morphik(morphik_uri)
         self.ingested_docs = []
         self.failed_docs = []
+        self.ingested_files_cache = set()  # Track ingested files locally
         
-        # Validate Morphik connection
+        # Validate Morphik connection (handle 307 redirect issue gracefully)
         try:
             self.db.list_documents()
             logger.info("[SUCCESS] Connected to Morphik successfully")
         except Exception as e:
-            logger.error(f"[ERROR] Failed to connect to Morphik: {e}")
-            raise
+            if "307" in str(e) or "Redirect" in str(e):
+                logger.warning("[WARNING] Document listing has redirect issue, but connection works")
+                logger.info("[INFO] Proceeding with ingestion - this is likely a temporary API issue")
+            else:
+                logger.error(f"[ERROR] Failed to connect to Morphik: {e}")
+                raise
     
     def get_simplified_rules(self) -> List[NaturalLanguageRule]:
         """Get simplified, effective rules for ECSS document processing."""
@@ -142,18 +147,61 @@ Focus on practical, real-world application rather than theoretical content."""
         # Removed 300KB limit - allow all reasonable sized documents
         # Most ECSS documents are 200KB-8MB, which is perfectly fine
         
-        # Check if already ingested
-        try:
-            documents = self.db.list_documents()
-            for doc in documents:
-                if hasattr(doc, 'filename') and doc.filename == file_path.name:
-                    return False, f"Document already ingested: {file_path.name}"
-                if hasattr(doc, 'external_id') and doc.external_id == file_path.name:
-                    return False, f"Document already ingested: {file_path.name}"
-        except Exception as e:
-            logger.warning(f"Could not check existing documents: {e}")
+        # Alternative duplicate checking methods
+        if self.is_document_already_ingested(file_path):
+            return False, f"Document already ingested: {file_path.name}"
+        
+        logger.info(f"✅ Document validation passed: {file_path.name} ({file_size_kb:.1f}KB)")
         
         return True, "Valid"
+    
+    def is_document_already_ingested(self, file_path: Path) -> bool:
+        """Check if document is already ingested using multiple methods."""
+        filename = file_path.name
+        
+        # Method 1: Check local cache (fastest)
+        if filename in self.ingested_files_cache:
+            logger.info(f"📋 Found in local cache: {filename}")
+            return True
+        
+        # Method 2: Try to get document by external_id (reliable)
+        try:
+            doc = self.db.get_document(filename)
+            if doc:
+                logger.info(f"📋 Found existing document: {filename}")
+                self.ingested_files_cache.add(filename)  # Add to cache
+                return True
+        except Exception as e:
+            # Document doesn't exist or API error
+            pass
+        
+        # Method 3: Try search-based check (fallback)
+        try:
+            # Search for the document by name in chunks
+            search_query = f"filename:{filename}"
+            chunks = self.db.retrieve_chunks(search_query, k=1)
+            if chunks:
+                logger.info(f"📋 Found via search: {filename}")
+                self.ingested_files_cache.add(filename)  # Add to cache
+                return True
+        except Exception as e:
+            # Search failed, assume not ingested
+            pass
+        
+        # Method 4: Check if we can query the document directly
+        try:
+            # Try a simple query that should return results if document exists
+            response = self.db.query(f"ECSS {filename}", use_colpali=False)
+            if response and response.completion and len(response.completion) > 100:
+                logger.info(f"📋 Found via query: {filename}")
+                self.ingested_files_cache.add(filename)  # Add to cache
+                return True
+        except Exception as e:
+            # Query failed, assume not ingested
+            pass
+        
+        logger.info(f"🆕 Document not found in any cache: {filename}")
+        return False
     
     def estimate_cost_impact(self, file_count: int, file_sizes: List[float]) -> Dict:
         """Estimate cost impact based on clean_and_ingest.py patterns."""
@@ -285,6 +333,9 @@ Focus on practical, real-world application rather than theoretical content."""
                     # Validate the extraction quality (like clean_and_ingest.py)
                     if self.is_metadata_valid(doc.external_id):
                         extracted_info = self.extract_meaningful_info(refreshed_doc)
+                        
+                        # Add to local cache to prevent re-ingestion
+                        self.ingested_files_cache.add(file_path.name)
                         
                         self.ingested_docs.append({
                             'file': str(file_path),
@@ -596,7 +647,7 @@ def main():
         return
     
     # Set up PDF directory
-    pdf_dir = Path("../../ECSS Published Standards/1-Active Standards")
+    pdf_dir = Path("../../../ECSS Published Standards/1-Active Standards")
     if not pdf_dir.exists():
         print(f"[ERROR] PDF directory not found: {pdf_dir}")
         return

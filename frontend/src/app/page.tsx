@@ -105,18 +105,13 @@ export default function LandingPage() {
                 </svg>
               </Link>
               
-              <Link
-                href="#benefits"
-                className="inline-flex items-center px-8 py-4 border border-border bg-card/50 text-foreground rounded-lg hover:bg-card transition-all duration-300 font-medium"
-              >
-                Learn More
-              </Link>
+
             </div>
 
             {/* Stats */}
             <div className={`grid grid-cols-2 lg:grid-cols-3 gap-8 mt-16 animate-fade-in ${isLoaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
               <div className="text-center lg:text-left">
-                <div className="text-3xl font-bold text-accent">141</div>
+                <div className="text-3xl font-bold text-accent">50</div>
                 <div className="text-sm text-muted-foreground">ECSS Documents</div>
               </div>
               <div className="text-center lg:text-left">

@@ -112,3 +112,19 @@ All colors MUST be HSL.
 ::-webkit-scrollbar-thumb:hover {
   background: hsl(220 60% 45%);
 }
+
+/* Mobile cursor fixes - hide pointer cursor on touch devices */
+@media (hover: none) and (pointer: coarse) {
+  * {
+    cursor: none !important;
+  }
+  
+  button, a, [role="button"], [tabindex] {
+    cursor: none !important;
+  }
+  
+  /* Ensure no pointer cursors on mobile */
+  .cursor-pointer {
+    cursor: none !important;
+  }
+}
