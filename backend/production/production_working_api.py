@@ -84,7 +84,7 @@ class ProductionWorkingAPI:
         
         @app.route('/api/working/search', methods=['GET'])
         def working_search():
-            """Enhanced search returning individual document sections with full content."""
+            """Simplified search returning only AI response for faster performance."""
             try:
                 query = request.args.get('q', '').strip()
                 if not query:
@@ -92,169 +92,34 @@ class ProductionWorkingAPI:
                 
                 start_time = time.time()
                 
-                # Get document chunks (PRIORITIZE TEXT CONTENT)
-                try:
-                    # Use simple, reliable chunk retrieval for ALL queries
-                    chunks = self.morphik_system.db.retrieve_chunks(query, k=8, use_colpali=False)
-                    logger.info(f"Retrieved {len(chunks)} chunks for query: '{query}'")
-                except Exception as e:
-                    logger.error(f"Failed to retrieve chunks: {e}")
-                    chunks = []
-                
-                # Get AI contextual response (optional for speed)
+                # Get AI contextual response only
                 ai_response = None
                 try:
-                    # Make AI response optional - skip if it's slow
+                    # Get AI response directly from Morphik
                     response = self.morphik_system.db.query(query, use_colpali=False)
                     if response and response.completion:
                         ai_response = response.completion
                         logger.info(f"Got AI response: {len(ai_response)} chars")
+                    else:
+                        ai_response = "I couldn't find specific information about that in the ECSS documents. Please try asking about ECSS standards, requirements, or procedures."
                 except Exception as e:
-                    logger.warning(f"AI response skipped: {e}")
-                    # Continue without AI response for faster search
-                
-                # Format individual document results with better content extraction
-                document_results = []
-                processed_documents = set()  # Track documents to allow multiple results from same doc
-                
-                for i, chunk in enumerate(chunks[:8]):  # Increased to 8 to get more variety
-                    try:
-                        # TEXT-ONLY content extraction - NO visual content
-                        content = ""
-                        
-                        # Only extract TEXT content, skip visual content
-                        if hasattr(chunk, 'content') and chunk.content:
-                            content_val = chunk.content
-                            # Skip if it's visual content (PIL Image, base64, etc.)
-                            if hasattr(content_val, 'size'):  # PIL Image
-                                content = ""  # Skip visual content
-                            elif isinstance(content_val, str) and content_val.startswith('data:image'):
-                                content = ""  # Skip base64 images
-                            else:
-                                content = str(content_val)
-                        
-                        # Try text attribute if content is empty/visual
-                        if not content and hasattr(chunk, 'text') and chunk.text:
-                            content = str(chunk.text)
-                        
-                        # Try other text attributes
-                        if not content:
-                            for attr in ['data', 'body', 'text_content']:
-                                if hasattr(chunk, attr):
-                                    val = getattr(chunk, attr)
-                                    if val and isinstance(val, str) and len(val) > 50:
-                                        content = val
-                                        break
-                        
-                        # Try to get better content if current content is insufficient
-                        if not content or len(content) < 50:
-                            try:
-                                # Try to get better content using document query
-                                better_query = f"Find information about {query}"
-                                doc_response = self.morphik_system.db.query(better_query, use_colpali=False)
-                                if doc_response and doc_response.completion and len(doc_response.completion) > 100:
-                                    content = doc_response.completion[:1500]
-                                    logger.info(f"Got better content: {len(content)} chars")
-                            except Exception as e:
-                                logger.warning(f"Failed to get better content: {e}")
-                        
-                        # Skip this result if we can't get real text content
-                        if not content or len(content) < 50:
-                            logger.warning(f"Skipping chunk {i} - no meaningful text content found")
-                            continue
-                        
-
-                        
-                        # Limit content length for faster processing (first 1500 chars for better context)
-                        if len(content) > 1500:
-                            content = content[:1500] + "..."
-                        
-                        # Fast document info extraction
-                        filename = getattr(chunk, 'filename', f'ECSS Document {i+1}')
-                        
-                        # Simple, reliable scoring
-                        raw_score = getattr(chunk, 'score', 0.0)
-                        score = min(raw_score * 100, 100.0)  # Cap at 100%
-                        
-                        # Only filter out very low relevance (below 5%) to allow variety
-                        if score < 5.0:
-                            logger.info(f"Skipping chunk {i} - very low relevance score: {score:.1f}%")
-                            continue
-                        
-                        document_id = getattr(chunk, 'document_id', f'doc_{i}')
-                        # Try to get actual PDF page number, not just chunk processing order
-                        page_number = getattr(chunk, 'page_number', None) or getattr(chunk, 'page', None)
-                        if not page_number:
-                            # Try to extract from metadata if available
-                            chunk_metadata = getattr(chunk, 'metadata', {})
-                            if isinstance(chunk_metadata, dict):
-                                page_number = chunk_metadata.get('page_number') or chunk_metadata.get('page')
-                        
-                        # Try to extract page number from content if available
-                        if not page_number and content:
-                            import re
-                            # Look for page references in content
-                            page_matches = re.findall(r'page\s+(\d+)', content.lower())
-                            if page_matches:
-                                page_number = page_matches[0]
-                        
-                        # If still no real page number, try to get from document query
-                        if not page_number and not document_id.startswith('direct_query_'):
-                            try:
-                                page_query = f"What page contains {query} in {filename}"
-                                page_response = self.morphik_system.db.query(page_query, use_colpali=False)
-                                if page_response and page_response.completion:
-                                    page_text = page_response.completion.lower()
-                                    page_matches = re.findall(r'page\s+(\d+)', page_text)
-                                    if page_matches:
-                                        page_number = page_matches[0]
-                            except Exception as e:
-                                logger.warning(f"Failed to get page number: {e}")
-                        
-                        # If still no real page number, use chunk number as fallback
-                        display_page = page_number if page_number else f"Chunk {getattr(chunk, 'chunk_number', i + 1)}"
-                        
-                        # Clean up filename (faster)
-                        display_name = filename.replace('.pdf', '') if filename.endswith('.pdf') else filename
-                        
-                        # Debug log for content issues
-                        logger.info(f"Chunk {i}: content length = {len(content)}, filename = {filename}, page = {display_page}, score = {score:.1f}%")
-                        
-                        # Allow multiple results from same document (different sections)
-                        # Don't track by document_id, allow variety
-                        
-                        document_results.append({
-                            'id': f"doc-{i}",
-                            'title': f"Section from {display_name}",
-                            'content': content,
-                            'score': round(score, 1),
-                            'source': display_name,
-                            'metadata': {
-                                'document_name': display_name,
-                                'is_visual': False,
-                                'method': 'text_extraction',
-                                'page_display': display_page,
-                                'page_number': page_number
-                            }
-                        })
-                    except Exception as e:
-                        logger.warning(f"Failed to process chunk {i}: {e}")
-                        continue
+                    logger.warning(f"AI response failed: {e}")
+                    ai_response = "Sorry, I'm having trouble accessing the ECSS documents right now. Please try again later."
                 
                 processing_time = time.time() - start_time
                 
-                # Prepare final response
+                # Prepare simplified response with only AI response
                 response_data = {
                     'ai_response': ai_response,
-                    'results': document_results,
-                    'total': len(document_results),
+                    'results': [],  # Empty array for compatibility
+                    'total': 0,
                     'query': query,
-                    'methods_used': ['text_extraction', 'ai_context'],
+                    'methods_used': ['ai_context_only'],
                     'processing_time': processing_time,
                     'timestamp': time.time()
                 }
                 
-                logger.info(f"✅ Search completed: {len(document_results)} individual results")
+                logger.info(f"✅ AI search completed in {processing_time:.2f}s")
                 return jsonify(response_data)
                 
             except Exception as e:
@@ -293,39 +158,36 @@ class ProductionWorkingAPI:
         
         @app.route('/api/working/capabilities', methods=['GET'])
         def working_capabilities():
-            """List available capabilities."""
+            """Get working capabilities for simplified AI-only system."""
             return jsonify({
                 'working_features': {
-                    'standard_search': {
+                    'ai_search': {
                         'status': 'working',
-                        'description': 'Standard text-based query with excellent results',
-                        'endpoint': '/api/working/search?q=<query>'
+                        'description': 'AI-powered search with contextual responses',
+                        'endpoint': '/api/working/search?q=<query>',
+                        'response_time': '3-8 seconds'
                     },
-                    'colpali_visual': {
-                        'status': 'working', 
-                        'description': 'Visual content analysis and extraction',
-                        'endpoint': '/api/working/search?q=<query>'
-                    },
-                    'context_chunks': {
+                    'ecss_knowledge': {
                         'status': 'working',
-                        'description': 'Retrieve relevant document chunks',
-                        'endpoint': '/api/working/search?q=<query>'
+                        'description': 'Access to ECSS standards and requirements',
+                        'documents_processed': '3 documents',
+                        'coverage': 'ECSS standards and procedures'
                     },
-                    'batch_operations': {
-                        'status': 'partial',
-                        'description': 'Document batch analysis (parameter issues fixed)',
-                        'endpoint': '/api/working/batch?limit=<limit>'
+                    'simple_interface': {
+                        'status': 'working',
+                        'description': 'Clean, fast user interface',
+                        'features': ['AI responses only', 'Fast loading', 'Mobile responsive']
                     }
                 },
                 'disabled_features': {
-                    'agent_query': 'timeout issues',
-                    'knowledge_graphs': 'not available in plan',
-                    'document_listing': '307 redirect issues'
+                    'document_chunks': 'removed for speed optimization',
+                    'visual_search': 'removed for speed optimization',
+                    'batch_operations': 'not needed for AI-only approach'
                 },
                 'performance': {
-                    'typical_response_time': '5-15 seconds',
-                    'quality': 'excellent for ECSS content',
-                    'reliability': 'high for enabled features'
+                    'typical_response_time': '3-8 seconds',
+                    'quality': 'excellent AI responses',
+                    'reliability': 'high for AI queries'
                 }
             })
         
