@@ -13,19 +13,26 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "ECSS Standards Navigator",
-  description: "Search and navigate European Cooperation for Space Standardization (ECSS) documents",
-  keywords: "ECSS, space standards, aerospace, engineering standards, space engineering",
+  title: "ECSS Navigator - AI-Powered Space Standards Search",
+  description: "Advanced RAG technology for searching European Cooperation for Space Standardization (ECSS) documents with AI precision",
+  keywords: "ECSS, space standards, aerospace, engineering standards, space engineering, AI search, RAG technology",
+  authors: [{ name: "ECSS Navigator Team" }],
+  openGraph: {
+    title: "ECSS Navigator - AI-Powered Space Standards Search",
+    description: "Advanced RAG technology for searching European Cooperation for Space Standardization (ECSS) documents with AI precision",
+    type: "website",
+    url: "https://ecss-hunt.vercel.app",
+  },
 };
 
 export default function RootLayout({
   children,
-}: Readonly<{
+}: {
   children: React.ReactNode;
-}>) {
+}) {
   return (
     <html lang="en">
-      <body className={`${geistSans.variable} ${geistMono.variable}`}>
+      <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
         {children}
       </body>
     </html>

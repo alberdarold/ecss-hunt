@@ -130,7 +130,7 @@ function extractDocumentName(title: string): string {
 function cleanAIResponse(response: string): string {
   if (!response) return '';
   
-  // Convert markdown formatting to HTML
+  // Convert markdown formatting to HTML with better spacing
   let cleaned = response
     // Convert bold markdown to HTML
     .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
@@ -138,11 +138,10 @@ function cleanAIResponse(response: string): string {
     .replace(/^[\s]*[-*]\s+(.+)$/gm, '<li>$1</li>')
     // Convert numbered lists
     .replace(/^[\s]*\d+\.\s+(.+)$/gm, '<li>$1</li>')
-    // Convert headers
-    .replace(/^#{1,3}\s+(.+)$/gm, '<h3>$1</h3>')
-    // Convert line breaks
-    .replace(/\n\n/g, '</p><p>')
-    .replace(/\n/g, '<br>');
+    // Convert line breaks with better paragraph spacing
+    .replace(/\n\n\n/g, '</p><p>')  // Triple line breaks for section breaks
+    .replace(/\n\n/g, '</p><p>')    // Double line breaks for paragraphs
+    .replace(/\n/g, '<br>');        // Single line breaks within paragraphs
   
   // Wrap in paragraphs
   if (cleaned && !cleaned.startsWith('<')) {

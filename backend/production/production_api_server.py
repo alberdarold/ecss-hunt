@@ -104,35 +104,37 @@ class ProductionAPIServer:
             # Break down the response into digestible sections
             sections = []
             
-            # Add header
+            # Add header with better spacing
             sections.append(f"🎯 **Key Information about '{query.title()}'**")
+            sections.append("")  # Add spacing
             
             # Split content into logical chunks
             paragraphs = raw_response.split('\n\n')
             if not paragraphs:
                 paragraphs = [raw_response]
             
-            # Process each paragraph to make it more readable
+            # Process each paragraph to make it more readable with better organization
             structured_content = []
             for i, paragraph in enumerate(paragraphs[:3]):  # Limit to 3 paragraphs
                 if len(paragraph.strip()) > 50:  # Only include substantial content
-                    # Add bullet points for better structure
+                    # Add structured sections with better formatting
                     if i == 0:
-                        structured_content.append(f"📋 **Main Information:**\n{paragraph.strip()}")
+                        structured_content.append(f"📋 **Main Information**\n\n{paragraph.strip()}")
                     elif i == 1:
-                        structured_content.append(f"🔍 **Detailed Context:**\n{paragraph.strip()}")
+                        structured_content.append(f"🔍 **Detailed Context**\n\n{paragraph.strip()}")
                     else:
-                        structured_content.append(f"📖 **Additional Details:**\n{paragraph.strip()}")
+                        structured_content.append(f"📖 **Additional Details**\n\n{paragraph.strip()}")
             
-            # Combine sections
+            # Combine sections with proper spacing
             if structured_content:
                 sections.extend(structured_content)
             else:
                 # Fallback: use first 500 characters with better formatting
                 content = raw_response[:500] + "..." if len(raw_response) > 500 else raw_response
-                sections.append(f"📋 **Summary:**\n{content}")
+                sections.append(f"📋 **Summary**\n\n{content}")
             
-            # Add footer with result count
+            # Add footer with result count and spacing
+            sections.append("")  # Add spacing before footer
             sections.append(f"💡 *Found {result_count} relevant results from ECSS documents*")
             
             return '\n\n'.join(sections)

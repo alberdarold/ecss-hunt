@@ -139,9 +139,8 @@ Focus on practical, real-world application rather than theoretical content."""
         if file_size_mb > 100:  # 100MB limit
             return False, f"File too large: {file_size_mb:.1f}MB"
         
-        # Prefer smaller files for cost control (like clean_and_ingest.py)
-        if file_size_kb > 300:
-            return False, f"File too large for cost control: {file_size_kb:.1f}KB (max 300KB)"
+        # Removed 300KB limit - allow all reasonable sized documents
+        # Most ECSS documents are 200KB-8MB, which is perfectly fine
         
         # Check if already ingested
         try:
@@ -378,34 +377,39 @@ Focus on practical, real-world application rather than theoretical content."""
             return {'source': 'error', 'error': str(e)}
 
     def get_suitable_files(self, pdf_dir: Path, max_docs: int = None) -> List[Path]:
-        """Get suitable files for ingestion based on clean_and_ingest.py patterns."""
+        """Get suitable files for ingestion - removed 300KB limit."""
         pdf_files = list(pdf_dir.glob("*.pdf"))
         if not pdf_files:
             logger.error(f"No PDF files found in {pdf_dir}")
             return []
         
-        # Filter files under 300KB for cost control (like clean_and_ingest.py)
+        # Include all files under 100MB (removed 300KB limit)
         suitable_files = []
         for pdf_file in pdf_files:
+            file_size_mb = pdf_file.stat().st_size / (1024 * 1024)
             file_size_kb = pdf_file.stat().st_size / 1024
-            if file_size_kb < 300:
+            
+            # Only exclude files over 100MB
+            if file_size_mb <= 100:
                 suitable_files.append((pdf_file, file_size_kb))
         
         if not suitable_files:
-            logger.error(f"No PDF files under 300KB found in {pdf_dir}")
+            logger.error(f"No suitable PDF files found in {pdf_dir}")
             logger.info(f"Available files range from {min([f.stat().st_size / 1024 for f in pdf_files]):.1f}KB to {max([f.stat().st_size / 1024 for f in pdf_files]):.1f}KB")
             return []
         
         # Sort by size (smallest first for cost efficiency)
         suitable_files.sort(key=lambda x: x[1])
         
-        # Limit selection
+        # Limit selection if specified
         if max_docs:
             suitable_files = suitable_files[:max_docs]
         
-        logger.info(f"Found {len(suitable_files)} suitable files (under 300KB):")
-        for file_info in suitable_files:
+        logger.info(f"Found {len(suitable_files)} suitable files (under 100MB):")
+        for file_info in suitable_files[:10]:  # Show first 10
             logger.info(f"  - {file_info[0].name} ({file_info[1]:.1f}KB)")
+        if len(suitable_files) > 10:
+            logger.info(f"  ... and {len(suitable_files) - 10} more files")
         
         return [file_info[0] for file_info in suitable_files]
 
