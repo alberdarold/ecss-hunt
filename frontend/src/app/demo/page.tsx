@@ -285,12 +285,12 @@ export default function DemoPage() {
                 </h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                   {[
-                    "spacewire protocol identifier",
-                    "3.2.20 response",
-                    "tool management",
-                    "verification methods",
-                    "software requirements",
-                    "quality assurance procedures"
+                    "What are the main objectives of ECSS-E-ST-10-02C?",
+                    "Describe the verification methods required for engineering projects in ECSS.",
+                    "What are the configuration management requirements in ECSS-E standards?",
+                    "List the quality assurance activities required by ECSS-E-ST-10-02C.",
+                    "How does ECSS define and handle nonconformance in engineering projects?",
+                    "What are the software engineering requirements according to ECSS-E-ST-40C?"
                   ].map((example, index) => (
                     <button
                       key={index}
