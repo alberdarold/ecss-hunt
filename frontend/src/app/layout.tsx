@@ -33,7 +33,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <head>
-        <link rel="icon" href="/src/app/ecss_logo.ico" type="image/x-icon" />
+        <link rel="icon" href="/ecss_logo.ico" type="image/x-icon" />
       </head>
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
         {children}
