@@ -25,6 +25,7 @@ import os
 import json
 import time
 import logging
+import re
 from typing import Dict, List, Optional, Any
 from datetime import datetime
 from dataclasses import asdict
@@ -327,19 +328,45 @@ class ProductionAPIServer:
                 
                 results = filtered_results[:limit]
                 
-                # Extract document sources from search results
+                # Robust extraction of document sources for frontend display.
+                # Tries multiple fields and regex extraction to ensure sources are always shown.
                 document_sources = []
                 logger.info(f"🔍 Processing {len(results)} search results for document sources")
                 
                 for i, result in enumerate(results):
+                    filename = None
                     logger.info(f"🔍 Result {i}: has document_info={hasattr(result, 'document_info')}")
+
+                    # 1. Try document_info['filename']
                     if hasattr(result, 'document_info') and result.document_info:
-                        filename = result.document_info.get('filename', '')
-                        logger.info(f"🔍 Result {i}: filename='{filename}'")
-                        if filename and filename not in document_sources:
-                            document_sources.append(filename)
-                    else:
-                        logger.info(f"🔍 Result {i}: No document_info or empty")
+                        filename = result.document_info.get('filename', None)
+                        logger.info(f"🔍 Result {i}: filename from document_info='{filename}'")
+
+                    # 2. Try document_id
+                    if not filename and hasattr(result, 'document_info') and result.document_info:
+                        filename = result.document_info.get('document_id', None)
+                        logger.info(f"🔍 Result {i}: filename from document_id='{filename}'")
+
+                    # 3. Try result.source
+                    if not filename and hasattr(result, 'source'):
+                        filename = getattr(result, 'source', None)
+                        logger.info(f"🔍 Result {i}: filename from source='{filename}'")
+
+                    # 4. Try to extract from content using regex
+                    if not filename and hasattr(result, 'content'):
+                        match = re.search(r'ECSS-[A-Z]-[A-Z]{2}-[A-Za-z0-9().-]+\.pdf', str(result.content))
+                        if match:
+                            filename = match.group(0)
+                            logger.info(f"🔍 Result {i}: filename from regex='{filename}'")
+
+                    # 5. Fallback
+                    if not filename:
+                        filename = f"Unknown Document {i+1}"
+                        logger.info(f"🔍 Result {i}: using fallback filename='{filename}'")
+
+                    if filename and filename not in document_sources:
+                        document_sources.append(filename)
+                        logger.info(f"🔍 Added document source: {filename}")
                 
                 # Debug logging for document sources
                 logger.info(f"📚 Found {len(document_sources)} document sources: {document_sources}")
