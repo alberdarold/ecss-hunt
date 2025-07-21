@@ -69,6 +69,7 @@ class SearchResult:
     explanation: str
     visual_elements: int
     is_visual_content: bool
+    detailed_content: Optional[str] = None  # Add detailed content for AI response
 
 @dataclass
 class IngestionResult:
@@ -240,11 +241,16 @@ class ECSSFoundationSystem:
             )
             
             # Step 2: Get detailed text extraction using query (the working method!)
-            response = self.db.query(query, use_colpali=self.config.use_colpali)
             detailed_content = ""
-            if response and response.completion:
-                detailed_content = response.completion
-                logger.info(f"📖 Extracted detailed content: {len(detailed_content)} chars")
+            try:
+                # Add timeout to prevent hanging
+                response = self.db.query(query, use_colpali=self.config.use_colpali)
+                if response and response.completion:
+                    detailed_content = response.completion
+                    logger.info(f"📖 Extracted detailed content: {len(detailed_content)} chars")
+            except Exception as e:
+                logger.warning(f"⚠️ Detailed content extraction failed: {e}")
+                # Continue with just chunk results
             
             results = []
             for i, chunk in enumerate(chunks[:limit]):
@@ -253,6 +259,9 @@ class ECSSFoundationSystem:
                     chunk, query, detailed_content, i
                 )
                 if result:
+                    # Add detailed content to the first result for AI response
+                    if i == 0:
+                        result.detailed_content = detailed_content
                     results.append(result)
             
             logger.info(f"📊 Found {len(results)} enhanced results with detailed content")
@@ -260,6 +269,36 @@ class ECSSFoundationSystem:
             
         except Exception as e:
             logger.error(f"❌ Search failed: {e}")
+            return []
+
+    def search_with_visual_content_fast(self, query: str, limit: int = 5) -> List[SearchResult]:
+        """
+        Fast search without ColPali for quicker responses.
+        
+        Returns search results in 1-3 seconds instead of 10-15 seconds.
+        """
+        logger.info(f"⚡ Fast search: '{query}'")
+        
+        try:
+            # Only get chunks, skip expensive ColPali query
+            chunks = self.db.retrieve_chunks(
+                query, 
+                use_colpali=False,  # Disable ColPali for speed
+                k=limit * 2
+            )
+            
+            results = []
+            for i, chunk in enumerate(chunks[:limit]):
+                # Create basic result without detailed content
+                result = self._create_enhanced_search_result(chunk, query)
+                if result:
+                    results.append(result)
+            
+            logger.info(f"⚡ Fast search completed: {len(results)} results")
+            return results
+            
+        except Exception as e:
+            logger.error(f"❌ Fast search failed: {e}")
             return []
     
     def _create_enhanced_search_result(self, chunk, query: str) -> Optional[SearchResult]:

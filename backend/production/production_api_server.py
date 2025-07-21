@@ -277,6 +277,7 @@ class ProductionAPIServer:
             query = request.args.get('q', '').strip()
             limit = int(request.args.get('limit', 5))
             include_visual = request.args.get('include_visual', 'true').lower() == 'true'
+            fast_mode = request.args.get('fast_mode', 'false').lower() == 'true'
             
             # ECSS-specific filtering (restored from original API)
             branch = request.args.get('branch', None)  # E, M, Q, S, U
@@ -294,7 +295,12 @@ class ProductionAPIServer:
             
             try:
                 # Perform enhanced search with ECSS filtering
-                results = self.foundation.search_with_visual_content(query, limit)
+                if fast_mode:
+                    # Fast mode: skip ColPali for quicker responses
+                    results = self.foundation.search_with_visual_content_fast(query, limit)
+                else:
+                    # Full mode: use ColPali for comprehensive results
+                    results = self.foundation.search_with_visual_content(query, limit)
                 
                 # Apply ECSS-specific filters
                 filtered_results = []
@@ -323,19 +329,35 @@ class ProductionAPIServer:
                 
                 # Extract document sources from search results
                 document_sources = []
-                for result in results:
+                logger.info(f"🔍 Processing {len(results)} search results for document sources")
+                
+                for i, result in enumerate(results):
+                    logger.info(f"🔍 Result {i}: has document_info={hasattr(result, 'document_info')}")
                     if hasattr(result, 'document_info') and result.document_info:
                         filename = result.document_info.get('filename', '')
+                        logger.info(f"🔍 Result {i}: filename='{filename}'")
                         if filename and filename not in document_sources:
                             document_sources.append(filename)
+                    else:
+                        logger.info(f"🔍 Result {i}: No document_info or empty")
                 
-                # Get contextual response (improved structure with document sources)
+                # Debug logging for document sources
+                logger.info(f"📚 Found {len(document_sources)} document sources: {document_sources}")
+                
+                # Get contextual response from the search results (avoid duplicate query)
                 contextual_response = None
-                if self.config.use_colpali:
+                if results and hasattr(results[0], 'detailed_content'):
+                    # Use the detailed content already extracted during search
+                    detailed_content = results[0].detailed_content
+                    if detailed_content:
+                        contextual_response = self._structure_contextual_response(
+                            detailed_content, query, len(results), document_sources
+                        )
+                elif self.config.use_colpali:
+                    # Fallback: only query if not already done
                     try:
                         response = self.foundation.db.query(query, use_colpali=True)
                         if response and response.completion:
-                            # Structure the contextual response for better readability with sources
                             contextual_response = self._structure_contextual_response(
                                 response.completion, query, len(results), document_sources
                             )
@@ -352,10 +374,15 @@ class ProductionAPIServer:
                     'visual_results': sum(1 for r in results if r.is_visual_content),
                     'text_results': sum(1 for r in results if not r.is_visual_content),
                     'document_sources': document_sources,
+                    'ai_response': contextual_response,  # Frontend expects ai_response
                     'contextual_response': contextual_response,
                     'processing_time': processing_time,
                     'timestamp': datetime.now().isoformat()
                 }
+                
+                # Debug logging for response data
+                logger.info(f"📤 Response includes {len(document_sources)} document sources")
+                logger.info(f"📤 Contextual response length: {len(contextual_response) if contextual_response else 0}")
                 
                 logger.info(f"Search completed: '{query}' -> {len(results)} results ({processing_time:.2f}s)")
                 

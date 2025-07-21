@@ -51,10 +51,12 @@ export default function DemoPage() {
       const response = await searchAPI.search(filters);
       
       // Extract AI response and document sources
+      console.log('API Response:', response); // Debug logging
       if (response.ai_response) {
         setAiResponse(response.ai_response);
         setProcessingTime(response.processing_time || null);
         setDocumentSources(response.document_sources || []);
+        console.log('Document sources:', response.document_sources); // Debug logging
       } else {
         setAiResponse("No AI response available for this query. Please try a different search term.");
         setDocumentSources([]);
