@@ -290,7 +290,7 @@ export default function DemoPage() {
                     "What are the configuration management requirements in ECSS-E standards?",
                     "List the quality assurance activities required by ECSS-E-ST-10-02C.",
                     "How does ECSS define redundancy in spacecraft design?",
-                    "Describe the environmental testing procedures for space hardware in ECSS-E-ST-10-03C"
+                    "Explain the process for functional testing of spacecraft systems in ECSS."
                   ].map((example, index) => (
                     <button
                       key={index}
