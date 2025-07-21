@@ -1,0 +1,607 @@
+{
+  "total_documents": 50,
+  "successful_ingestions": 42,
+  "failed_ingestions": 8,
+  "total_time": 13442.44,
+  "average_time_per_doc": 268.85,
+  "success_rate": 84.0,
+  "failed_docs": [
+    {
+      "file": "..\\..\\..\\ECSS Published Standards\\1-Active Standards\\ECSS-E-ST-70C(31July2008).pdf",
+      "error": "Document processing did not complete within 900 seconds"
+    },
+    {
+      "file": "..\\..\\..\\ECSS Published Standards\\1-Active Standards\\ECSS-E-ST-50C-Rev.1(1March2021).pdf",
+      "error": "Document processing did not complete within 900 seconds"
+    },
+    {
+      "file": "..\\..\\..\\ECSS Published Standards\\1-Active Standards\\ECSS-E-ST-70-31C(31July2008).pdf",
+      "error": "Document processing did not complete within 900 seconds"
+    },
+    {
+      "file": "..\\..\\..\\ECSS Published Standards\\1-Active Standards\\ECSS-E-ST-10-03 Rev.1(31May2022).pdf",
+      "error": "Document processing did not complete within 900 seconds"
+    },
+    {
+      "file": "..\\..\\..\\ECSS Published Standards\\1-Active Standards\\ECSS-S-ST-00-01C_Rev.1(11October2023).pdf",
+      "error": "Document processing did not complete within 900 seconds"
+    },
+    {
+      "file": "..\\..\\..\\ECSS Published Standards\\1-Active Standards\\ECSS-E-ST-20C-Rev.2(8April2022).pdf",
+      "error": "Document processing did not complete within 900 seconds"
+    },
+    {
+      "file": "..\\..\\..\\ECSS Published Standards\\1-Active Standards\\ECSS-E-ST-20-08C_Rev.2(20April2023).pdf",
+      "error": "Document processing did not complete within 900 seconds"
+    },
+    {
+      "file": "..\\..\\..\\ECSS Published Standards\\1-Active Standards\\ECSS-E-ST-10-04C-Rev.1(15June2020).pdf",
+      "error": "Document processing did not complete within 900 seconds"
+    }
+  ],
+  "selected_files": [
+    "ECSS-E-ST-32-08C-Rev.1(15October2014).pdf",
+    "ECSS-E-ST-32-03C(31July2008).pdf",
+    "ECSS-E-ST-32-10C_Rev.2-Corr.1(1August2019).pdf",
+    "ECSS-S-ST-00C Rev.1(15June2020).pdf",
+    "ECSS-E-ST-31-04C(1February2018).pdf",
+    "ECSS-E-ST-35-02C(8October2010).pdf",
+    "ECSS-S-ST-00-02C-DRAFT1(15June2020).pdf",
+    "ECSS-E-AS-50-25C-Rev.1(13January2023).pdf",
+    "ECSS-E-AS-50-24C-Rev.1(13January2023).pdf",
+    "ECSS-E-ST-20-21C(15May2019).pdf",
+    "ECSS-E-ST-10-06C(6March2009).pdf",
+    "ECSS-E-ST-35-03C(13May2011).pdf",
+    "ECSS-E-ST-60-30C(30August2013).pdf",
+    "ECSS-E-ST-10-09C(31July2008).pdf",
+    "ECSS-E-ST-10-02C-Rev.1(1February2018).pdf",
+    "ECSS-E-ST-32-02C_Rev.1(15November2008).pdf",
+    "ECSS-E-ST-20-20C(15April2016).pdf",
+    "ECSS-E-ST-50-14C(31July2008).pdf",
+    "ECSS-E-ST-35-10C(6March2009).pdf",
+    "ECSS-E-ST-10-11C(31July2008).pdf",
+    "ECSS-E-ST-33-01C-Rev.2(1March2019).pdf",
+    "ECSS-E-ST-35-01C(15November2008).pdf",
+    "ECSS-E-ST-34C(31July2008).pdf",
+    "ECSS-E-ST-50-05C_Rev2(4October2011).pdf",
+    "ECSS-E-ST-35C_Rev.1(6March2009).pdf",
+    "ECSS-E-ST-31C(15November2008).pdf",
+    "ECSS-E-ST-35-06C Rev.2(7April2020).pdf",
+    "ECSS-E-ST-32-11C(31July2008).pdf",
+    "ECSS-E-ST-32C_Rev.1(15November2008).pdf",
+    "ECSS-E-ST-60-20C_Rev.2(15May2019).pdf",
+    "ECSS-E-ST-10C-Rev.1(15February2017).pdf",
+    "ECSS-E-ST-10-24C(1June2015).pdf",
+    "ECSS-E-ST-60-10C(15November2008).pdf",
+    "ECSS-E-ST-70-11C(31July2008).pdf",
+    "ECSS-E-ST-70-01C(16April2010).pdf",
+    "ECSS-E-ST-60-21C(15February2017).pdf",
+    "ECSS-E-ST-50-15C(1May2015).pdf",
+    "ECSS-E-ST-50-12C Rev.1(15May2019).pdf",
+    "ECSS-E-ST-20-07C-Rev.2(3January2022).pdf",
+    "ECSS-E-ST-32-01C_Rev.2(30July2021).pdf",
+    "ECSS-E-ST-40C(6March2009).pdf",
+    "ECSS-E-ST-70-32C(31July2008).pdf",
+    "ECSS-E-ST-70C(31July2008).pdf",
+    "ECSS-E-ST-50C-Rev.1(1March2021).pdf",
+    "ECSS-E-ST-70-31C(31July2008).pdf",
+    "ECSS-E-ST-10-03 Rev.1(31May2022).pdf",
+    "ECSS-S-ST-00-01C_Rev.1(11October2023).pdf",
+    "ECSS-E-ST-20C-Rev.2(8April2022).pdf",
+    "ECSS-E-ST-20-08C_Rev.2(20April2023).pdf",
+    "ECSS-E-ST-10-04C-Rev.1(15June2020).pdf"
+  ],
+  "cost_info": {
+    "file_count": 50,
+    "total_size_mb": 45.6,
+    "estimated_pages": 113,
+    "cost_note": "Each ingestion counts toward your Morphik plan limits",
+    "recommendation": "Start with 1-2 documents to test quality before batch processing"
+  },
+  "ingested_docs": [
+    {
+      "file": "..\\..\\..\\ECSS Published Standards\\1-Active Standards\\ECSS-E-ST-32-08C-Rev.1(15October2014).pdf",
+      "external_id": "ECSS-E-ST-32-08C-Rev.1(15October2014).pdf",
+      "info": {
+        "source": "chunks",
+        "summary": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAABnYAAAkjCAIAAACzq+aSAAEAAElEQVR4nOzddXgU18LH8bMedzcIwYK7Q3EqVKCU0tvSQkvd3WjpvXWHlgpVaHmhtLi0FJfiFiBIQoS4e9bt/WPTJSSbsMkGUvl+nj59ZmfOzDmzu2ST3x6RWK1WAQAAAA data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAABnYAAAkjCAIAAACzq+aSAAEAAElEQVR4nOzdZ3xUVcLH8TN90nsvJPTeqxRpgoLYxYrA2rCsbdeyj7rq2rBjQ+y4uipWxC69dwidhIT03iaZZHp5XtwwhMkkTLjBrOvv+8LPLeeee+5kzJD/nKJwu90CAA",
+        "chunk_count": 9,
+        "visual_elements": 0
+      },
+      "processing_time": 68.18299603462219,
+      "method_used": "simplified_rules + ColPali (visual processing)"
+    },
+    {
+      "file": "..\\..\\..\\ECSS Published Standards\\1-Active Standards\\ECSS-E-ST-32-03C(31July2008).pdf",
+      "external_id": "ECSS-E-ST-32-03C(31July2008).pdf",
+      "info": {
+        "source": "chunks",
+        "summary": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAABnYAAAkjCAIAAACzq+aSAAEAAElEQVR4nOzddXgU18LH8bMedzcIwYK7Q3EqVKCU0tvSQkvd3WjpvXWHlgpVaHmhtLi0FJfiFiBIQoS4e9bt/WPTJSSbsMkGUvl+nj59ZmfOzDmzu2ST3x6RWK1WAQAAAA data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAABnYAAAkjCAIAAACzq+aSAAEAAElEQVR4nOzdZ3xUVcLH8TN90nsvJPTeqxRpgoLYxYrA2rCsbdeyj7rq2rBjQ+y4uipWxC69dwidhIT03iaZZHp5XtwwhMkkTLjBrOvv+8LPLeeee+5kzJD/nKJwu90CAA",
+        "chunk_count": 9,
+        "visual_elements": 0
+      },
+      "processing_time": 53.138187646865845,
+      "method_used": "simplified_rules + ColPali (visual processing)"
+    },
+    {
+      "file": "..\\..\\..\\ECSS Published Standards\\1-Active Standards\\ECSS-E-ST-32-10C_Rev.2-Corr.1(1August2019).pdf",
+      "external_id": "ECSS-E-ST-32-10C_Rev.2-Corr.1(1August2019).pdf",
+      "info": {
+        "source": "chunks",
+        "summary": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAABnYAAAkjCAIAAACzq+aSAAEAAElEQVR4nOzddXgU18LH8bMedzcIwYK7Q3EqVKCU0tvSQkvd3WjpvXWHlgpVaHmhtLi0FJfiFiBIQoS4e9bt/WPTJSSbsMkGUvl+nj59ZmfOzDmzu2ST3x6RWK1WAQAAAA data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAABnYAAAkjCAIAAACzq+aSAAEAAElEQVR4nOzdZ3xUVcLH8TN90nsvJPTeqxRpgoLYxYrA2rCsbdeyj7rq2rBjQ+y4uipWxC69dwidhIT03iaZZHp5XtwwhMkkTLjBrOvv+8LPLeeee+5kzJD/nKJwu90CAA",
+        "chunk_count": 9,
+        "visual_elements": 0
+      },
+      "processing_time": 71.05556225776672,
+      "method_used": "simplified_rules + ColPali (visual processing)"
+    },
+    {
+      "file": "..\\..\\..\\ECSS Published Standards\\1-Active Standards\\ECSS-S-ST-00C Rev.1(15June2020).pdf",
+      "external_id": "ECSS-S-ST-00C Rev.1(15June2020).pdf",
+      "info": {
+        "source": "chunks",
+        "summary": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAABnYAAAkjCAIAAACzq+aSAAEAAElEQVR4nOzdd3hUVcLH8TN9Jr13QkLovfciiCIgKipiF1wbrLrWFbu78q69sLr23kUERAHpvbfQk5CQ3nsm09v7x8QhJJOQ5AZi+X6effaZOffcc8+dGRPym1NkLpdLAA data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAABnYAAAkjCAIAAACzq+aSAAEAAElEQVR4nOzddXgU18LH8bMedzcIwYK7Q3EqVKCU0tvSQkvd3WjpvXWHlgpVaHmhtLi0FJfiFiBIQoS4e9bt/WPTJSSbsMkGUvl+nj59ZmfOzDmzu2ST3x6RWK1WAQAAAA",
+        "chunk_count": 9,
+        "visual_elements": 0
+      },
+      "processing_time": 71.51962304115295,
+      "method_used": "simplified_rules + ColPali (visual processing)"
+    },
+    {
+      "file": "..\\..\\..\\ECSS Published Standards\\1-Active Standards\\ECSS-E-ST-31-04C(1February2018).pdf",
+      "external_id": "ECSS-E-ST-31-04C(1February2018).pdf",
+      "info": {
+        "source": "chunks",
+        "summary": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAABnYAAAkjCAIAAACzq+aSAAEAAElEQVR4nOzdd3hUVcLH8TN9Jr13QkLovfciiCIgKipiF1wbrLrWFbu78q69sLr23kUERAHpvbfQk5CQ3nsm09v7x8QhJJOQ5AZi+X6effaZOffcc8+dGRPym1NkLpdLAA data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAABnYAAAkjCAIAAACzq+aSAAEAAElEQVR4nOzddXgU18LH8bMedzcIwYK7Q3EqVKCU0tvSQkvd3WjpvXWHlgpVaHmhtLi0FJfiFiBIQoS4e9bt/WPTJSSbsMkGUvl+nj59ZmfOzDmzu2ST3x6RWK1WAQAAAA",
+        "chunk_count": 9,
+        "visual_elements": 0
+      },
+      "processing_time": 68.80083394050598,
+      "method_used": "simplified_rules + ColPali (visual processing)"
+    },
+    {
+      "file": "..\\..\\..\\ECSS Published Standards\\1-Active Standards\\ECSS-E-ST-35-02C(8October2010).pdf",
+      "external_id": "ECSS-E-ST-35-02C(8October2010).pdf",
+      "info": {
+        "source": "chunks",
+        "summary": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAABnYAAAkjCAIAAACzq+aSAAEAAElEQVR4nOzdd3hUVcLH8TN9Jr13QkLovfciiCIgKipiF1wbrLrWFbu78q69sLr23kUERAHpvbfQk5CQ3nsm09v7x8QhJJOQ5AZi+X6effaZOffcc8+dGRPym1NkLpdLAA data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAABnYAAAkjCAIAAACzq+aSAAEAAElEQVR4nOzddXgU18LH8bMedzcIwYK7Q3EqVKCU0tvSQkvd3WjpvXWHlgpVaHmhtLi0FJfiFiBIQoS4e9bt/WPTJSSbsMkGUvl+nj59ZmfOzDmzu2ST3x6RWK1WAQAAAA",
+        "chunk_count": 9,
+        "visual_elements": 0
+      },
+      "processing_time": 89.46832513809204,
+      "method_used": "simplified_rules + ColPali (visual processing)"
+    },
+    {
+      "file": "..\\..\\..\\ECSS Published Standards\\1-Active Standards\\ECSS-S-ST-00-02C-DRAFT1(15June2020).pdf",
+      "external_id": "ECSS-S-ST-00-02C-DRAFT1(15June2020).pdf",
+      "info": {
+        "source": "chunks",
+        "summary": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAABnYAAAkjCAIAAACzq+aSAAEAAElEQVR4nOzdd3hUVcLH8TN9Jr13QkLovfciiCIgKipiF1wbrLrWFbu78q69sLr23kUERAHpvbfQk5CQ3nsm09v7x8QhJJOQ5AZi+X6effaZOffcc8+dGRPym1NkLpdLAA data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAACSMAAAZ2CAIAAADVZbb1AAEAAElEQVR4nOzdd3xTVf8H8JM9m+69KS3QAmVT9t4iIhtFwYGC4sAFLhw8j4hbHDhAEASZMmTIXmUVOqBA994jzWj2uL8/bg0lTdIkFPr48/P+6+bec8899za0vPLJ9xwGRV",
+        "chunk_count": 9,
+        "visual_elements": 0
+      },
+      "processing_time": 66.1157283782959,
+      "method_used": "simplified_rules + ColPali (visual processing)"
+    },
+    {
+      "file": "..\\..\\..\\ECSS Published Standards\\1-Active Standards\\ECSS-E-AS-50-25C-Rev.1(13January2023).pdf",
+      "external_id": "ECSS-E-AS-50-25C-Rev.1(13January2023).pdf",
+      "info": {
+        "source": "chunks",
+        "summary": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAABnYAAAkjCAIAAACzq+aSAAEAAElEQVR4nOzdd3hUVcLH8TN9Jr13QkLovfciiCIgKipiF1wbrLrWFbu78q69sLr23kUERAHpvbfQk5CQ3nsm09v7x8QhJJOQ5AZi+X6effaZOffcc8+dGRPym1NkLpdLAA data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAABnYAAAkjCAIAAACzq+aSAAEAAElEQVR4nOzdd3wURRsH8Lne0nuvJEAIJYTepfciRYoivCoCgl1BREWxoCiKICIdsdGLdCK9B0iAAOm99+R63fePjUe4lrtcIIC/7x987mZnZ2Y3S8pzM88wKIoiAAAAAA",
+        "chunk_count": 9,
+        "visual_elements": 0
+      },
+      "processing_time": 85.22641110420227,
+      "method_used": "simplified_rules + ColPali (visual processing)"
+    },
+    {
+      "file": "..\\..\\..\\ECSS Published Standards\\1-Active Standards\\ECSS-E-AS-50-24C-Rev.1(13January2023).pdf",
+      "external_id": "ECSS-E-AS-50-24C-Rev.1(13January2023).pdf",
+      "info": {
+        "source": "chunks",
+        "summary": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAABnYAAAkjCAIAAACzq+aSAAEAAElEQVR4nOzdd3hUVcLH8TN9Jr13QkLovfciiCIgKipiF1wbrLrWFbu78q69sLr23kUERAHpvbfQk5CQ3nsm09v7x8QhJJOQ5AZi+X6effaZOffcc8+dGRPym1NkLpdLAA data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAACSMAAAZ2CAIAAADVZbb1AAEAAElEQVR4nOzdd3xTVf8H8JM9m+69KS3QAmVT9t4iIhtFwYGC4sAFLhw8j4hbHDhAEASZMmTIXmUVOqBA994jzWj2uL8/bg0lTdIkFPr48/P+6+bec8899za0vPLJ9xwGRV",
+        "chunk_count": 9,
+        "visual_elements": 0
+      },
+      "processing_time": 60.409443855285645,
+      "method_used": "simplified_rules + ColPali (visual processing)"
+    },
+    {
+      "file": "..\\..\\..\\ECSS Published Standards\\1-Active Standards\\ECSS-E-ST-20-21C(15May2019).pdf",
+      "external_id": "ECSS-E-ST-20-21C(15May2019).pdf",
+      "info": {
+        "source": "chunks",
+        "summary": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAABnYAAAkjCAIAAACzq+aSAAEAAElEQVR4nOzdd3hUVcLH8TN9Jr13QkLovfciiCIgKipiF1wbrLrWFbu78q69sLr23kUERAHpvbfQk5CQ3nsm09v7x8QhJJOQ5AZi+X6effaZOffcc8+dGRPym1NkLpdLAA data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAACSMAAAZ2CAIAAADVZbb1AAEAAElEQVR4nOzdd3xTVf8H8JM9m+69KS3QAmVT9t4iIhtFwYGC4sAFLhw8j4hbHDhAEASZMmTIXmUVOqBA994jzWj2uL8/bg0lTdIkFPr48/P+6+bec8899za0vPLJ9xwGRV",
+        "chunk_count": 9,
+        "visual_elements": 0
+      },
+      "processing_time": 85.21630644798279,
+      "method_used": "simplified_rules + ColPali (visual processing)"
+    },
+    {
+      "file": "..\\..\\..\\ECSS Published Standards\\1-Active Standards\\ECSS-E-ST-10-06C(6March2009).pdf",
+      "external_id": "ECSS-E-ST-10-06C(6March2009).pdf",
+      "info": {
+        "source": "chunks",
+        "summary": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAABnYAAAkjCAIAAACzq+aSAAEAAElEQVR4nOzdd3hUVcLH8TN9Jr13QkLovfciiCIgKipiF1wbrLrWFbu78q69sLr23kUERAHpvbfQk5CQ3nsm09v7x8QhJJOQ5AZi+X6effaZOffcc8+dGRPym1NkLpdLAA data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAACSMAAAZ2CAIAAADVZbb1AAEAAElEQVR4nOzdd3xTVf8H8JM9m+69KS3QAmVT9t4iIhtFwYGC4sAFLhw8j4hbHDhAEASZMmTIXmUVOqBA994jzWj2uL8/bg0lTdIkFPr48/P+6+bec8899za0vPLJ9xwGRV",
+        "chunk_count": 9,
+        "visual_elements": 0
+      },
+      "processing_time": 68.3939278125763,
+      "method_used": "simplified_rules + ColPali (visual processing)"
+    },
+    {
+      "file": "..\\..\\..\\ECSS Published Standards\\1-Active Standards\\ECSS-E-ST-35-03C(13May2011).pdf",
+      "external_id": "ECSS-E-ST-35-03C(13May2011).pdf",
+      "info": {
+        "source": "chunks",
+        "summary": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAABnYAAAkjCAIAAACzq+aSAAEAAElEQVR4nOzdd3hUVcLH8TN90nsvhBJq6F1AERBUYG2o2LH31deyFqyrrrqrLqhrL7gWxAIuoIL0DtJrSCO990ymt/ePG8eQTMIMF4jl+3n22eeWc889d2ZMwm9OUbjdbg data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAABnYAAAkjCAIAAACzq+aSAAEAAElEQVR4nOzdd3hUVcLH8TN9Jr13QkLovfciiCIgKipiF1wbrLrWFbu78q69sLr23kUERAHpvbfQk5CQ3nsm09v7x8QhJJOQ5AZi+X6effaZOffcc8+dGRPym1NkLpdLAA",
+        "chunk_count": 9,
+        "visual_elements": 0
+      },
+      "processing_time": 89.6046290397644,
+      "method_used": "simplified_rules + ColPali (visual processing)"
+    },
+    {
+      "file": "..\\..\\..\\ECSS Published Standards\\1-Active Standards\\ECSS-E-ST-60-30C(30August2013).pdf",
+      "external_id": "ECSS-E-ST-60-30C(30August2013).pdf",
+      "info": {
+        "source": "chunks",
+        "summary": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAABnYAAAkjCAIAAACzq+aSAAEAAElEQVR4nOzdd3hUVcLH8TN90nsvhBJq6F1AERBUYG2o2LH31deyFqyrrrqrLqhrL7gWxAIuoIL0DtJrSCO990ymt/ePG8eQTMIMF4jl+3n22eeWc889d2ZMwm9OUbjdbg data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAABnYAAAkjCAIAAACzq+aSAAEAAElEQVR4nOzdd3hUVcLH8TN9Jr13QkLovfciiCIgKipiF1wbrLrWFbu78q69sLr23kUERAHpvbfQk5CQ3nsm09v7x8QhJJOQ5AZi+X6effaZOffcc8+dGRPym1NkLpdLAA",
+        "chunk_count": 9,
+        "visual_elements": 0
+      },
+      "processing_time": 124.01904606819153,
+      "method_used": "simplified_rules + ColPali (visual processing)"
+    },
+    {
+      "file": "..\\..\\..\\ECSS Published Standards\\1-Active Standards\\ECSS-E-ST-10-09C(31July2008).pdf",
+      "external_id": "ECSS-E-ST-10-09C(31July2008).pdf",
+      "info": {
+        "source": "chunks",
+        "summary": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAABnYAAAkjCAIAAACzq+aSAAEAAElEQVR4nOzdd3hUVcLH8TN90nsvhBJq6F1AERBUYG2o2LH31deyFqyrrrqrLqhrL7gWxAIuoIL0DtJrSCO990ymt/ePG8eQTMIMF4jl+3n22eeWc889d2ZMwm9OUbjdbg data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAABnYAAAkjCAIAAACzq+aSAAEAAElEQVR4nOzdd3hUVcLH8TN9Jr13QkLovfciiCIgKipiF1wbrLrWFbu78q69sLr23kUERAHpvbfQk5CQ3nsm09v7x8QhJJOQ5AZi+X6effaZOffcc8+dGRPym1NkLpdLAA",
+        "chunk_count": 9,
+        "visual_elements": 0
+      },
+      "processing_time": 75.94179368019104,
+      "method_used": "simplified_rules + ColPali (visual processing)"
+    },
+    {
+      "file": "..\\..\\..\\ECSS Published Standards\\1-Active Standards\\ECSS-E-ST-10-02C-Rev.1(1February2018).pdf",
+      "external_id": "ECSS-E-ST-10-02C-Rev.1(1February2018).pdf",
+      "info": {
+        "source": "chunks",
+        "summary": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAABnYAAAkjCAIAAACzq+aSAAEAAElEQVR4nOzdd3hUVcLH8TN90nsvhBJq6F1AERBUYG2o2LH31deyFqyrrrqrLqhrL7gWxAIuoIL0DtJrSCO990ymt/ePG8eQTMIMF4jl+3n22eeWc889d2ZMwm9OUbjdbg data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAABnYAAAkjCAIAAACzq+aSAAEAAElEQVR4nOzdd3hUVcLH8TN9Jr13QkLovfciiCIgKipiF1wbrLrWFbu78q69sLr23kUERAHpvbfQk5CQ3nsm09v7x8QhJJOQ5AZi+X6effaZOffcc8+dGRPym1NkLpdLAA",
+        "chunk_count": 9,
+        "visual_elements": 0
+      },
+      "processing_time": 101.73556184768677,
+      "method_used": "simplified_rules + ColPali (visual processing)"
+    },
+    {
+      "file": "..\\..\\..\\ECSS Published Standards\\1-Active Standards\\ECSS-E-ST-32-02C_Rev.1(15November2008).pdf",
+      "external_id": "ECSS-E-ST-32-02C_Rev.1(15November2008).pdf",
+      "info": {
+        "source": "chunks",
+        "summary": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAABnYAAAkjCAIAAACzq+aSAAEAAElEQVR4nOzdd3hUVcLH8TN90nsvhBJq6F1AERBUYG2o2LH31deyFqyrrrqrLqhrL7gWxAIuoIL0DtJrSCO990ymt/ePG8eQTMIMF4jl+3n22eeWc889d2ZMwm9OUbjdbg data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAABnYAAAkjCAIAAACzq+aSAAEAAElEQVR4nOzdd3hUVcLH8TN9Jr13QkLovfciiCIgKipiF1wbrLrWFbu78q69sLr23kUERAHpvbfQk5CQ3nsm09v7x8QhJJOQ5AZi+X6effaZOffcc8+dGRPym1NkLpdLAA",
+        "chunk_count": 9,
+        "visual_elements": 0
+      },
+      "processing_time": 121.99625039100647,
+      "method_used": "simplified_rules + ColPali (visual processing)"
+    },
+    {
+      "file": "..\\..\\..\\ECSS Published Standards\\1-Active Standards\\ECSS-E-ST-20-20C(15April2016).pdf",
+      "external_id": "ECSS-E-ST-20-20C(15April2016).pdf",
+      "info": {
+        "source": "chunks",
+        "summary": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAABnYAAAkjCAIAAACzq+aSAAEAAElEQVR4nOzdd3hUVcLH8TN90nsvhBJq6F1AERBUYG2o2LH31deyFqyrrrqrLqhrL7gWxAIuoIL0DtJrSCO990ymt/ePG8eQTMIMF4jl+3n22eeWc889d2ZMwm9OUbjdbg data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAABnYAAAkjCAIAAACzq+aSAAEAAElEQVR4nOzdd3hUVcLH8TN9Jr13QkLovfciiCIgKipiF1wbrLrWFbu78q69sLr23kUERAHpvbfQk5CQ3nsm09v7x8QhJJOQ5AZi+X6effaZOffcc8+dGRPym1NkLpdLAA",
+        "chunk_count": 9,
+        "visual_elements": 0
+      },
+      "processing_time": 121.10301661491394,
+      "method_used": "simplified_rules + ColPali (visual processing)"
+    },
+    {
+      "file": "..\\..\\..\\ECSS Published Standards\\1-Active Standards\\ECSS-E-ST-50-14C(31July2008).pdf",
+      "external_id": "ECSS-E-ST-50-14C(31July2008).pdf",
+      "info": {
+        "source": "chunks",
+        "summary": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAABnYAAAkjCAIAAACzq+aSAAEAAElEQVR4nOzdd3hUVcLH8TN90nsvhBJq6F1AERBUYG2o2LH31deyFqyrrrqrLqhrL7gWxAIuoIL0DtJrSCO990ymt/ePG8eQTMIMF4jl+3n22eeWc889d2ZMwm9OUbjdbg data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAABnYAAAkjCAIAAACzq+aSAAEAAElEQVR4nOzdd3hUVcLH8TN9Jr13QkLovfciiCIgKipiF1wbrLrWFbu78q69sLr23kUERAHpvbfQk5CQ3nsm09v7x8QhJJOQ5AZi+X6effaZOffcc8+dGRPym1NkLpdLAA",
+        "chunk_count": 9,
+        "visual_elements": 0
+      },
+      "processing_time": 130.10627937316895,
+      "method_used": "simplified_rules + ColPali (visual processing)"
+    },
+    {
+      "file": "..\\..\\..\\ECSS Published Standards\\1-Active Standards\\ECSS-E-ST-35-10C(6March2009).pdf",
+      "external_id": "ECSS-E-ST-35-10C(6March2009).pdf",
+      "info": {
+        "source": "chunks",
+        "summary": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAABnYAAAkjCAIAAACzq+aSAAEAAElEQVR4nOzdd3hUVcLH8TN90nsvhBJq6F1AERBUYG2o2LH31deyFqyrrrqrLqhrL7gWxAIuoIL0DtJrSCO990ymt/ePG8eQTMIMF4jl+3n22eeWc889d2ZMwm9OUbjdbg data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAABnYAAAkjCAIAAACzq+aSAAEAAElEQVR4nOzdd3hUVcLH8TN9Jr13QkLovfciiCIgKipiF1wbrLrWFbu78q69sLr23kUERAHpvbfQk5CQ3nsm09v7x8QhJJOQ5AZi+X6effaZOffcc8+dGRPym1NkLpdLAA",
+        "chunk_count": 9,
+        "visual_elements": 0
+      },
+      "processing_time": 98.1311662197113,
+      "method_used": "simplified_rules + ColPali (visual processing)"
+    },
+    {
+      "file": "..\\..\\..\\ECSS Published Standards\\1-Active Standards\\ECSS-E-ST-10-11C(31July2008).pdf",
+      "external_id": "ECSS-E-ST-10-11C(31July2008).pdf",
+      "info": {
+        "source": "chunks",
+        "summary": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAABnYAAAkjCAIAAACzq+aSAAEAAElEQVR4nOzdd3hUVcLH8TN90nsvhBJq6F1AERBUYG2o2LH31deyFqyrrrqrLqhrL7gWxAIuoIL0DtJrSCO990ymt/ePG8eQTMIMF4jl+3n22eeWc889d2ZMwm9OUbjdbg data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAABnYAAAkjCAIAAACzq+aSAAEAAElEQVR4nOzdd3hUVcLH8TN9Jr13QkLovfciiCIgKipiF1wbrLrWFbu78q69sLr23kUERAHpvbfQk5CQ3nsm09v7x8QhJJOQ5AZi+X6effaZOffcc8+dGRPym1NkLpdLAA",
+        "chunk_count": 9,
+        "visual_elements": 0
+      },
+      "processing_time": 87.85149192810059,
+      "method_used": "simplified_rules + ColPali (visual processing)"
+    },
+    {
+      "file": "..\\..\\..\\ECSS Published Standards\\1-Active Standards\\ECSS-E-ST-33-01C-Rev.2(1March2019).pdf",
+      "external_id": "ECSS-E-ST-33-01C-Rev.2(1March2019).pdf",
+      "info": {
+        "source": "chunks",
+        "summary": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAABnYAAAkjCAIAAACzq+aSAAEAAElEQVR4nOzdd3hUVcLH8TN90nsvhBJq6F1AERBUYG2o2LH31deyFqyrrrqrLqhrL7gWxAIuoIL0DtJrSCO990ymt/ePG8eQTMIMF4jl+3n22eeWc889d2ZMwm9OUbjdbg data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAABnYAAAkjCAIAAACzq+aSAAEAAElEQVR4nOzdd3hUVcLH8TN9Jr13QkLovfciiCIgKipiF1wbrLrWFbu78q69sLr23kUERAHpvbfQk5CQ3nsm09v7x8QhJJOQ5AZi+X6effaZOffcc8+dGRPym1NkLpdLAA",
+        "chunk_count": 9,
+        "visual_elements": 0
+      },
+      "processing_time": 111.57235336303711,
+      "method_used": "simplified_rules + ColPali (visual processing)"
+    },
+    {
+      "file": "..\\..\\..\\ECSS Published Standards\\1-Active Standards\\ECSS-E-ST-35-01C(15November2008).pdf",
+      "external_id": "ECSS-E-ST-35-01C(15November2008).pdf",
+      "info": {
+        "source": "chunks",
+        "summary": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAABnYAAAkjCAIAAACzq+aSAAEAAElEQVR4nOzdd3hUVcLH8TN90nsvhBJq6F1AERBUYG2o2LH31deyFqyrrrqrLqhrL7gWxAIuoIL0DtJrSCO990ymt/ePG8eQTMIMF4jl+3n22eeWc889d2ZMwm9OUbjdbg data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAABnYAAAkjCAIAAACzq+aSAAEAAElEQVR4nOzdd3hUVcLH8TN9Jr13QkLovfciiCIgKipiF1wbrLrWFbu78q69sLr23kUERAHpvbfQk5CQ3nsm09v7x8QhJJOQ5AZi+X6effaZOffcc8+dGRPym1NkLpdLAA",
+        "chunk_count": 9,
+        "visual_elements": 0
+      },
+      "processing_time": 98.5330638885498,
+      "method_used": "simplified_rules + ColPali (visual processing)"
+    },
+    {
+      "file": "..\\..\\..\\ECSS Published Standards\\1-Active Standards\\ECSS-E-ST-34C(31July2008).pdf",
+      "external_id": "ECSS-E-ST-34C(31July2008).pdf",
+      "info": {
+        "source": "chunks",
+        "summary": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAABnYAAAkjCAIAAACzq+aSAAEAAElEQVR4nOzdd3hUVcLH8TN90nsvhBJq6F1AERBUYG2o2LH31deyFqyrrrqrLqhrL7gWxAIuoIL0DtJrSCO990ymt/ePG8eQTMIMF4jl+3n22eeWc889d2ZMwm9OUbjdbg data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAABnYAAAkjCAIAAACzq+aSAAEAAElEQVR4nOzdd3hUVcLH8TN9Jr13QkLovfciiCIgKipiF1wbrLrWFbu78q69sLr23kUERAHpvbfQk5CQ3nsm09v7x8QhJJOQ5AZi+X6effaZOffcc8+dGRPym1NkLpdLAA",
+        "chunk_count": 9,
+        "visual_elements": 0
+      },
+      "processing_time": 97.9924943447113,
+      "method_used": "simplified_rules + ColPali (visual processing)"
+    },
+    {
+      "file": "..\\..\\..\\ECSS Published Standards\\1-Active Standards\\ECSS-E-ST-50-05C_Rev2(4October2011).pdf",
+      "external_id": "ECSS-E-ST-50-05C_Rev2(4October2011).pdf",
+      "info": {
+        "source": "chunks",
+        "summary": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAABnYAAAkjCAIAAACzq+aSAAEAAElEQVR4nOzdd3hUVcLH8TN90nsvhBJq6F1AERBUYG2o2LH31deyFqyrrrqrLqhrL7gWxAIuoIL0DtJrSCO990ymt/ePG8eQTMIMF4jl+3n22eeWc889d2ZMwm9OUbjdbg data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAABnYAAAkjCAIAAACzq+aSAAEAAElEQVR4nOzdd3hUVcLH8TN9Jr13QkLovfciiCIgKipiF1wbrLrWFbu78q69sLr23kUERAHpvbfQk5CQ3nsm09v7x8QhJJOQ5AZi+X6effaZOffcc8+dGRPym1NkLpdLAA",
+        "chunk_count": 9,
+        "visual_elements": 0
+      },
+      "processing_time": 118.1993134021759,
+      "method_used": "simplified_rules + ColPali (visual processing)"
+    },
+    {
+      "file": "..\\..\\..\\ECSS Published Standards\\1-Active Standards\\ECSS-E-ST-35C_Rev.1(6March2009).pdf",
+      "external_id": "ECSS-E-ST-35C_Rev.1(6March2009).pdf",
+      "info": {
+        "source": "chunks",
+        "summary": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAABnYAAAkjCAIAAACzq+aSAAEAAElEQVR4nOzdd3hUVcLH8TN90nsvhBJq6F1AERBUYG2o2LH31deyFqyrrrqrLqhrL7gWxAIuoIL0DtJrSCO990ymt/ePG8eQTMIMF4jl+3n22eeWc889d2ZMwm9OUbjdbg data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAABnYAAAkjCAIAAACzq+aSAAEAAElEQVR4nOzdd3hUVcLH8TN9Jr13QkLovfciiCIgKipiF1wbrLrWFbu78q69sLr23kUERAHpvbfQk5CQ3nsm09v7x8QhJJOQ5AZi+X6effaZOffcc8+dGRPym1NkLpdLAA",
+        "chunk_count": 9,
+        "visual_elements": 0
+      },
+      "processing_time": 136.49824595451355,
+      "method_used": "simplified_rules + ColPali (visual processing)"
+    },
+    {
+      "file": "..\\..\\..\\ECSS Published Standards\\1-Active Standards\\ECSS-E-ST-31C(15November2008).pdf",
+      "external_id": "ECSS-E-ST-31C(15November2008).pdf",
+      "info": {
+        "source": "chunks",
+        "summary": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAABnYAAAkjCAIAAACzq+aSAAEAAElEQVR4nOzdd3hUVcLH8TN90nsvhBJq6F1AERBUYG2o2LH31deyFqyrrrqrLqhrL7gWxAIuoIL0DtJrSCO990ymt/ePG8eQTMIMF4jl+3n22eeWc889d2ZMwm9OUbjdbg data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAABnYAAAkjCAIAAACzq+aSAAEAAElEQVR4nOzdd3hUVcLH8TN9Jr13QkLovfciiCIgKipiF1wbrLrWFbu78q69sLr23kUERAHpvbfQk5CQ3nsm09v7x8QhJJOQ5AZi+X6effaZOffcc8+dGRPym1NkLpdLAA",
+        "chunk_count": 9,
+        "visual_elements": 0
+      },
+      "processing_time": 119.20705342292786,
+      "method_used": "simplified_rules + ColPali (visual processing)"
+    },
+    {
+      "file": "..\\..\\..\\ECSS Published Standards\\1-Active Standards\\ECSS-E-ST-35-06C Rev.2(7April2020).pdf",
+      "external_id": "ECSS-E-ST-35-06C Rev.2(7April2020).pdf",
+      "info": {
+        "source": "chunks",
+        "summary": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAABnYAAAkjCAIAAACzq+aSAAEAAElEQVR4nOzdd3hUVcLH8TN90nsvhBJq6F1AERBUYG2o2LH31deyFqyrrrqrLqhrL7gWxAIuoIL0DtJrSCO990ymt/ePG8eQTMIMF4jl+3n22eeWc889d2ZMwm9OUbjdbg data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAABnYAAAkjCAIAAACzq+aSAAEAAElEQVR4nOzdd3hUVcLH8TN9Jr13QkLovfciiCIgKipiF1wbrLrWFbu78q69sLr23kUERAHpvbfQk5CQ3nsm09v7x8QhJJOQ5AZi+X6effaZOffcc8+dGRPym1NkLpdLAA",
+        "chunk_count": 9,
+        "visual_elements": 0
+      },
+      "processing_time": 128.46361565589905,
+      "method_used": "simplified_rules + ColPali (visual processing)"
+    },
+    {
+      "file": "..\\..\\..\\ECSS Published Standards\\1-Active Standards\\ECSS-E-ST-32-11C(31July2008).pdf",
+      "external_id": "ECSS-E-ST-32-11C(31July2008).pdf",
+      "info": {
+        "source": "chunks",
+        "summary": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAABnYAAAkjCAIAAACzq+aSAAEAAElEQVR4nOzdd3hUVcLH8TN90nsvhBJq6F1AERBUYG2o2LH31deyFqyrrrqrLqhrL7gWxAIuoIL0DtJrSCO990ymt/ePG8eQTMIMF4jl+3n22eeWc889d2ZMwm9OUbjdbg data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAABnYAAAkjCAIAAACzq+aSAAEAAElEQVR4nOzdd3hUVcLH8TN9Jr13QkLovfciiCIgKipiF1wbrLrWFbu78q69sLr23kUERAHpvbfQk5CQ3nsm09v7x8QhJJOQ5AZi+X6effaZOffcc8+dGRPym1NkLpdLAA",
+        "chunk_count": 9,
+        "visual_elements": 0
+      },
+      "processing_time": 114.02501320838928,
+      "method_used": "simplified_rules + ColPali (visual processing)"
+    },
+    {
+      "file": "..\\..\\..\\ECSS Published Standards\\1-Active Standards\\ECSS-E-ST-32C_Rev.1(15November2008).pdf",
+      "external_id": "ECSS-E-ST-32C_Rev.1(15November2008).pdf",
+      "info": {
+        "source": "chunks",
+        "summary": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAABnYAAAkjCAIAAACzq+aSAAEAAElEQVR4nOzdd3hUVcLH8TN90nsvhBJq6F1AERBUYG2o2LH31deyFqyrrrqrLqhrL7gWxAIuoIL0DtJrSCO990ymt/ePG8eQTMIMF4jl+3n22eeWc889d2ZMwm9OUbjdbg data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAABnYAAAkjCAIAAACzq+aSAAEAAElEQVR4nOzdd3hUVcLH8TN9Jr13QkLovfciiCIgKipiF1wbrLrWFbu78q69sLr23kUERAHpvbfQk5CQ3nsm09v7x8QhJJOQ5AZi+X6effaZOffcc8+dGRPym1NkLpdLAA",
+        "chunk_count": 9,
+        "visual_elements": 0
+      },
+      "processing_time": 169.63221049308777,
+      "method_used": "simplified_rules + ColPali (visual processing)"
+    },
+    {
+      "file": "..\\..\\..\\ECSS Published Standards\\1-Active Standards\\ECSS-E-ST-60-20C_Rev.2(15May2019).pdf",
+      "external_id": "ECSS-E-ST-60-20C_Rev.2(15May2019).pdf",
+      "info": {
+        "source": "chunks",
+        "summary": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAABnYAAAkjCAIAAACzq+aSAAEAAElEQVR4nOzdd3hUVcLH8TN90nsvhBJq6F1AERBUYG2o2LH31deyFqyrrrqrLqhrL7gWxAIuoIL0DtJrSCO990ymt/ePG8eQTMIMF4jl+3n22eeWc889d2ZMwm9OUbjdbg data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAABnYAAAkjCAIAAACzq+aSAAEAAElEQVR4nOzdd3hUVcLH8TN9Jr13QkLovfciiCIgKipiF1wbrLrWFbu78q69sLr23kUERAHpvbfQk5CQ3nsm09v7x8QhJJOQ5AZi+X6effaZOffcc8+dGRPym1NkLpdLAA",
+        "chunk_count": 9,
+        "visual_elements": 0
+      },
+      "processing_time": 135.12648391723633,
+      "method_used": "simplified_rules + ColPali (visual processing)"
+    },
+    {
+      "file": "..\\..\\..\\ECSS Published Standards\\1-Active Standards\\ECSS-E-ST-10C-Rev.1(15February2017).pdf",
+      "external_id": "ECSS-E-ST-10C-Rev.1(15February2017).pdf",
+      "info": {
+        "source": "chunks",
+        "summary": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAABnYAAAkjCAIAAACzq+aSAAEAAElEQVR4nOzdd3hUVcLH8TN90nsvhBJq6F1AERBUYG2o2LH31deyFqyrrrqrLqhrL7gWxAIuoIL0DtJrSCO990ymt/ePG8eQTMIMF4jl+3n22eeWc889d2ZMwm9OUbjdbg data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAABnYAAAkjCAIAAACzq+aSAAEAAElEQVR4nOzdd3hUVcLH8TN9Jr13QkLovfciiCIgKipiF1wbrLrWFbu78q69sLr23kUERAHpvbfQk5CQ3nsm09v7x8QhJJOQ5AZi+X6effaZOffcc8+dGRPym1NkLpdLAA",
+        "chunk_count": 9,
+        "visual_elements": 0
+      },
+      "processing_time": 157.33035850524902,
+      "method_used": "simplified_rules + ColPali (visual processing)"
+    },
+    {
+      "file": "..\\..\\..\\ECSS Published Standards\\1-Active Standards\\ECSS-E-ST-10-24C(1June2015).pdf",
+      "external_id": "ECSS-E-ST-10-24C(1June2015).pdf",
+      "info": {
+        "source": "chunks",
+        "summary": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAABnYAAAkjCAIAAACzq+aSAAEAAElEQVR4nOzdd3hUVcLH8TN90nsvhBJq6F1AERBUYG2o2LH31deyFqyrrrqrLqhrL7gWxAIuoIL0DtJrSCO990ymt/ePG8eQTMIMF4jl+3n22eeWc889d2ZMwm9OUbjdbg data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAABnYAAAkjCAIAAACzq+aSAAEAAElEQVR4nOzdd3hUVcLH8TN9Jr13QkLovfciiCIgKipiF1wbrLrWFbu78q69sLr23kUERAHpvbfQk5CQ3nsm09v7x8QhJJOQ5AZi+X6effaZOffcc8+dGRPym1NkLpdLAA",
+        "chunk_count": 9,
+        "visual_elements": 0
+      },
+      "processing_time": 89.2783932685852,
+      "method_used": "simplified_rules + ColPali (visual processing)"
+    },
+    {
+      "file": "..\\..\\..\\ECSS Published Standards\\1-Active Standards\\ECSS-E-ST-60-10C(15November2008).pdf",
+      "external_id": "ECSS-E-ST-60-10C(15November2008).pdf",
+      "info": {
+        "source": "chunks",
+        "summary": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAABnYAAAkjCAIAAACzq+aSAAEAAElEQVR4nOzdd3hUVcLH8TN90nsvhBJq6F1AERBUYG2o2LH31deyFqyrrrqrLqhrL7gWxAIuoIL0DtJrSCO990ymt/ePG8eQTMIMF4jl+3n22eeWc889d2ZMwm9OUbjdbg data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAABnYAAAkjCAIAAACzq+aSAAEAAElEQVR4nOzdd3hUVcLH8TN9Jr13QkLovfciiCIgKipiF1wbrLrWFbu78q69sLr23kUERAHpvbfQk5CQ3nsm09v7x8QhJJOQ5AZi+X6effaZOffcc8+dGRPym1NkLpdLAA",
+        "chunk_count": 9,
+        "visual_elements": 0
+      },
+      "processing_time": 100.7068338394165,
+      "method_used": "simplified_rules + ColPali (visual processing)"
+    },
+    {
+      "file": "..\\..\\..\\ECSS Published Standards\\1-Active Standards\\ECSS-E-ST-70-11C(31July2008).pdf",
+      "external_id": "ECSS-E-ST-70-11C(31July2008).pdf",
+      "info": {
+        "source": "chunks",
+        "summary": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAABnYAAAkjCAIAAACzq+aSAAEAAElEQVR4nOzdd3hUVcLH8TN90nsvhBJq6F1AERBUYG2o2LH31deyFqyrrrqrLqhrL7gWxAIuoIL0DtJrSCO990ymt/ePG8eQTMIMF4jl+3n22eeWc889d2ZMwm9OUbjdbg data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAABnYAAAkjCAIAAACzq+aSAAEAAElEQVR4nOzdd3hUVcLH8TN9Jr13QkLovfciiCIgKipiF1wbrLrWFbu78q69sLr23kUERAHpvbfQk5CQ3nsm09v7x8QhJJOQ5AZi+X6effaZOffcc8+dGRPym1NkLpdLAA",
+        "chunk_count": 9,
+        "visual_elements": 0
+      },
+      "processing_time": 120.85007691383362,
+      "method_used": "simplified_rules + ColPali (visual processing)"
+    },
+    {
+      "file": "..\\..\\..\\ECSS Published Standards\\1-Active Standards\\ECSS-E-ST-70-01C(16April2010).pdf",
+      "external_id": "ECSS-E-ST-70-01C(16April2010).pdf",
+      "info": {
+        "source": "chunks",
+        "summary": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAABnYAAAkjCAIAAACzq+aSAAEAAElEQVR4nOzdd3hUVcLH8TN90nsvhBJq6F1AERBUYG2o2LH31deyFqyrrrqrLqhrL7gWxAIuoIL0DtJrSCO990ymt/ePG8eQTMIMF4jl+3n22eeWc889d2ZMwm9OUbjdbg data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAABnYAAAkjCAIAAACzq+aSAAEAAElEQVR4nOzdd3hUVcLH8TN9Jr13QkLovfciiCIgKipiF1wbrLrWFbu78q69sLr23kUERAHpvbfQk5CQ3nsm09v7x8QhJJOQ5AZi+X6effaZOffcc8+dGRPym1NkLpdLAA",
+        "chunk_count": 9,
+        "visual_elements": 0
+      },
+      "processing_time": 90.28147220611572,
+      "method_used": "simplified_rules + ColPali (visual processing)"
+    },
+    {
+      "file": "..\\..\\..\\ECSS Published Standards\\1-Active Standards\\ECSS-E-ST-60-21C(15February2017).pdf",
+      "external_id": "ECSS-E-ST-60-21C(15February2017).pdf",
+      "info": {
+        "source": "chunks",
+        "summary": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAABnYAAAkjCAIAAACzq+aSAAEAAElEQVR4nOzdd3hUVcLH8TN90nsvhBJq6F1AERBUYG2o2LH31deyFqyrrrqrLqhrL7gWxAIuoIL0DtJrSCO990ymt/ePG8eQTMIMF4jl+3n22eeWc889d2ZMwm9OUbjdbg data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAABnYAAAkjCAIAAACzq+aSAAEAAElEQVR4nOzdd3hUVcLH8TN9Jr13QkLovfciiCIgKipiF1wbrLrWFbu78q69sLr23kUERAHpvbfQk5CQ3nsm09v7x8QhJJOQ5AZi+X6effaZOffcc8+dGRPym1NkLpdLAA",
+        "chunk_count": 9,
+        "visual_elements": 0
+      },
+      "processing_time": 97.88813924789429,
+      "method_used": "simplified_rules + ColPali (visual processing)"
+    },
+    {
+      "file": "..\\..\\..\\ECSS Published Standards\\1-Active Standards\\ECSS-E-ST-50-15C(1May2015).pdf",
+      "external_id": "ECSS-E-ST-50-15C(1May2015).pdf",
+      "info": {
+        "source": "chunks",
+        "summary": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAABnYAAAkjCAIAAACzq+aSAAEAAElEQVR4nOzdd3hUVcLH8TN90nsvhBJq6F1AERBUYG2o2LH31deyFqyrrrqrLqhrL7gWxAIuoIL0DtJrSCO990ymt/ePG8eQTMIMF4jl+3n22eeWc889d2ZMwm9OUbjdbg data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAABnYAAAkjCAIAAACzq+aSAAEAAElEQVR4nOzdd3hUVcLH8TN9Jr13QkLovfciiCIgKipiF1wbrLrWFbu78q69sLr23kUERAHpvbfQk5CQ3nsm09v7x8QhJJOQ5AZi+X6effaZOffcc8+dGRPym1NkLpdLAA",
+        "chunk_count": 9,
+        "visual_elements": 0
+      },
+      "processing_time": 136.85514211654663,
+      "method_used": "simplified_rules + ColPali (visual processing)"
+    },
+    {
+      "file": "..\\..\\..\\ECSS Published Standards\\1-Active Standards\\ECSS-E-ST-50-12C Rev.1(15May2019).pdf",
+      "external_id": "ECSS-E-ST-50-12C Rev.1(15May2019).pdf",
+      "info": {
+        "source": "chunks",
+        "summary": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAABnYAAAkjCAIAAACzq+aSAAEAAElEQVR4nOzdd3hUVcLH8TN90nsvhBJq6F1AERBUYG2o2LH31deyFqyrrrqrLqhrL7gWxAIuoIL0DtJrSCO990ymt/ePG8eQTMIMF4jl+3n22eeWc889d2ZMwm9OUbjdbg data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAABnYAAAkjCAIAAACzq+aSAAEAAElEQVR4nOzdd3hUVcLH8TN9Jr13QkLovfciiCIgKipiF1wbrLrWFbu78q69sLr23kUERAHpvbfQk5CQ3nsm09v7x8QhJJOQ5AZi+X6effaZOffcc8+dGRPym1NkLpdLAA",
+        "chunk_count": 9,
+        "visual_elements": 0
+      },
+      "processing_time": 170.57724905014038,
+      "method_used": "simplified_rules + ColPali (visual processing)"
+    },
+    {
+      "file": "..\\..\\..\\ECSS Published Standards\\1-Active Standards\\ECSS-E-ST-20-07C-Rev.2(3January2022).pdf",
+      "external_id": "ECSS-E-ST-20-07C-Rev.2(3January2022).pdf",
+      "info": {
+        "source": "chunks",
+        "summary": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAABnYAAAkjCAIAAACzq+aSAAEAAElEQVR4nOzdd3hUVcLH8TN90nsvhBJq6F1AERBUYG2o2LH31deyFqyrrrqrLqhrL7gWxAIuoIL0DtJrSCO990ymt/ePG8eQTMIMF4jl+3n22eeWc889d2ZMwm9OUbjdbg data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAABnYAAAkjCAIAAACzq+aSAAEAAElEQVR4nOzdd3hUVcLH8TN9Jr13QkLovfciiCIgKipiF1wbrLrWFbu78q69sLr23kUERAHpvbfQk5CQ3nsm09v7x8QhJJOQ5AZi+X6effaZOffcc8+dGRPym1NkLpdLAA",
+        "chunk_count": 9,
+        "visual_elements": 0
+      },
+      "processing_time": 161.65280079841614,
+      "method_used": "simplified_rules + ColPali (visual processing)"
+    },
+    {
+      "file": "..\\..\\..\\ECSS Published Standards\\1-Active Standards\\ECSS-E-ST-32-01C_Rev.2(30July2021).pdf",
+      "external_id": "ECSS-E-ST-32-01C_Rev.2(30July2021).pdf",
+      "info": {
+        "source": "chunks",
+        "summary": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAABnYAAAkjCAIAAACzq+aSAAEAAElEQVR4nOzdd3hUVcLH8TN90nsvhBJq6F1AERBUYG2o2LH31deyFqyrrrqrLqhrL7gWxAIuoIL0DtJrSCO990ymt/ePG8eQTMIMF4jl+3n22eeWc889d2ZMwm9OUbjdbg data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAABnYAAAkjCAIAAACzq+aSAAEAAElEQVR4nOzdd3hUVcLH8TN9Jr13QkLovfciiCIgKipiF1wbrLrWFbu78q69sLr23kUERAHpvbfQk5CQ3nsm09v7x8QhJJOQ5AZi+X6effaZOffcc8+dGRPym1NkLpdLAA",
+        "chunk_count": 9,
+        "visual_elements": 0
+      },
+      "processing_time": 145.83718609809875,
+      "method_used": "simplified_rules + ColPali (visual processing)"
+    },
+    {
+      "file": "..\\..\\..\\ECSS Published Standards\\1-Active Standards\\ECSS-E-ST-40C(6March2009).pdf",
+      "external_id": "ECSS-E-ST-40C(6March2009).pdf",
+      "info": {
+        "source": "chunks",
+        "summary": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAABnYAAAkjCAIAAACzq+aSAAEAAElEQVR4nOzdd3hUVcLH8TN90nsvhBJq6F1AERBUYG2o2LH31deyFqyrrrqrLqhrL7gWxAIuoIL0DtJrSCO990ymt/ePG8eQTMIMF4jl+3n22eeWc889d2ZMwm9OUbjdbg data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAABnYAAAkjCAIAAACzq+aSAAEAAElEQVR4nOzdd3hUVcLH8TN9Jr13QkLovfciiCIgKipiF1wbrLrWFbu78q69sLr23kUERAHpvbfQk5CQ3nsm09v7x8QhJJOQ5AZi+X6effaZOffcc8+dGRPym1NkLpdLAA",
+        "chunk_count": 9,
+        "visual_elements": 0
+      },
+      "processing_time": 252.399334192276,
+      "method_used": "simplified_rules + ColPali (visual processing)"
+    },
+    {
+      "file": "..\\..\\..\\ECSS Published Standards\\1-Active Standards\\ECSS-E-ST-70-32C(31July2008).pdf",
+      "external_id": "ECSS-E-ST-70-32C(31July2008).pdf",
+      "info": {
+        "source": "chunks",
+        "summary": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAABnYAAAkjCAIAAACzq+aSAAEAAElEQVR4nOzdd3hUVcLH8TN90nsvhBJq6F1AERBUYG2o2LH31deyFqyrrrqrLqhrL7gWxAIuoIL0DtJrSCO990ymt/ePG8eQTMIMF4jl+3n22eeWc889d2ZMwm9OUbjdbg data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAABnYAAAkjCAIAAACzq+aSAAEAAElEQVR4nOzdd3hUVcLH8TN9Jr13QkLovfciiCIgKipiF1wbrLrWFbu78q69sLr23kUERAHpvbfQk5CQ3nsm09v7x8QhJJOQ5AZi+X6effaZOffcc8+dGRPym1NkLpdLAA",
+        "chunk_count": 9,
+        "visual_elements": 0
+      },
+      "processing_time": 168.02371191978455,
+      "method_used": "simplified_rules + ColPali (visual processing)"
+    }
+  ]
+}

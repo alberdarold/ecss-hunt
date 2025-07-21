@@ -98,20 +98,75 @@ class ProductionAPIServer:
         
         return app
     
-    def _structure_contextual_response(self, raw_response: str, query: str, result_count: int) -> str:
-        """Structure the contextual response for better engineer-friendly readability."""
+    def _clean_raw_response(self, raw_response: str) -> str:
+        """Clean raw AI response by converting markdown headers to structured formatting."""
+        if not raw_response:
+            return raw_response
+        
+        lines = raw_response.split('\n')
+        cleaned_lines = []
+        
+        for line in lines:
+            stripped = line.strip()
+            
+            # Skip empty lines and separators
+            if not stripped or stripped.startswith('---'):
+                continue
+            
+            # Convert markdown headers to structured formatting
+            if stripped.startswith('###### '):
+                # Level 6 header - make it a small section
+                title = stripped[7:].strip()
+                cleaned_lines.append(f"<strong>{title}</strong>")
+            elif stripped.startswith('##### '):
+                # Level 5 header - make it a small section
+                title = stripped[6:].strip()
+                cleaned_lines.append(f"<strong>{title}</strong>")
+            elif stripped.startswith('#### '):
+                # Level 4 header - make it a subsection
+                title = stripped[5:].strip()
+                cleaned_lines.append(f"<strong>{title}</strong>")
+            elif stripped.startswith('### '):
+                # Level 3 header - make it a main section
+                title = stripped[4:].strip()
+                cleaned_lines.append(f"<strong>{title}</strong>")
+            elif stripped.startswith('## '):
+                # Level 2 header - make it a major section
+                title = stripped[3:].strip()
+                cleaned_lines.append(f"<strong>{title}</strong>")
+            elif stripped.startswith('# '):
+                # Level 1 header - make it a main topic
+                title = stripped[2:].strip()
+                cleaned_lines.append(f"<strong>{title}</strong>")
+            else:
+                # Regular content line
+                cleaned_lines.append(stripped)
+        
+        # Join lines and clean up extra whitespace
+        cleaned = '\n'.join(cleaned_lines)
+        
+        # Remove any remaining standalone # symbols
+        cleaned = cleaned.replace('#', '')
+        
+        return cleaned
+
+    def _structure_contextual_response(self, raw_response: str, query: str, result_count: int, document_sources: List[str] = None) -> str:
+        """Structure the contextual response for better engineer-friendly readability with document sources."""
         try:
+            # Clean the raw response first
+            cleaned_response = self._clean_raw_response(raw_response)
+            
             # Break down the response into digestible sections
             sections = []
             
             # Add header with better spacing
-            sections.append(f"🎯 **Key Information about '{query.title()}'**")
+            sections.append(f"<strong>Key Information about '{query.title()}'</strong>")
             sections.append("")  # Add spacing
             
             # Split content into logical chunks
-            paragraphs = raw_response.split('\n\n')
+            paragraphs = cleaned_response.split('\n\n')
             if not paragraphs:
-                paragraphs = [raw_response]
+                paragraphs = [cleaned_response]
             
             # Process each paragraph to make it more readable with better organization
             structured_content = []
@@ -119,30 +174,40 @@ class ProductionAPIServer:
                 if len(paragraph.strip()) > 50:  # Only include substantial content
                     # Add structured sections with better formatting
                     if i == 0:
-                        structured_content.append(f"📋 **Main Information**\n\n{paragraph.strip()}")
+                        structured_content.append(f"<strong>Main Information</strong>\n\n{paragraph.strip()}")
                     elif i == 1:
-                        structured_content.append(f"🔍 **Detailed Context**\n\n{paragraph.strip()}")
+                        structured_content.append(f"<strong>Detailed Context</strong>\n\n{paragraph.strip()}")
                     else:
-                        structured_content.append(f"📖 **Additional Details**\n\n{paragraph.strip()}")
+                        structured_content.append(f"<strong>Additional Details</strong>\n\n{paragraph.strip()}")
             
             # Combine sections with proper spacing
             if structured_content:
                 sections.extend(structured_content)
             else:
                 # Fallback: use first 500 characters with better formatting
-                content = raw_response[:500] + "..." if len(raw_response) > 500 else raw_response
-                sections.append(f"📋 **Summary**\n\n{content}")
+                content = cleaned_response[:500] + "..." if len(cleaned_response) > 500 else cleaned_response
+                sections.append(f"<strong>Summary</strong>\n\n{content}")
+            
+            # Add document sources section
+            if document_sources and len(document_sources) > 0:
+                sections.append("")  # Add spacing
+                sections.append("<strong>Source Documents:</strong>")
+                for source in document_sources[:5]:  # Limit to 5 sources
+                    sections.append(f"• {source}")
+                if len(document_sources) > 5:
+                    sections.append(f"• ... and {len(document_sources) - 5} more documents")
             
             # Add footer with result count and spacing
             sections.append("")  # Add spacing before footer
-            sections.append(f"💡 *Found {result_count} relevant results from ECSS documents*")
+            sections.append(f"<em>Found {result_count} relevant results from ECSS documents</em>")
             
             return '\n\n'.join(sections)
             
         except Exception as e:
             logger.error(f"Error structuring contextual response: {e}")
-            # Fallback: return truncated original
-            return raw_response[:800] + "..." if len(raw_response) > 800 else raw_response
+            # Fallback: return cleaned original
+            cleaned_fallback = self._clean_raw_response(raw_response)
+            return cleaned_fallback[:800] + "..." if len(cleaned_fallback) > 800 else cleaned_fallback
     
     def _register_error_handlers(self, app: Flask):
         """Register error handlers."""
@@ -256,15 +321,23 @@ class ProductionAPIServer:
                 
                 results = filtered_results[:limit]
                 
-                # Get contextual response (improved structure)
+                # Extract document sources from search results
+                document_sources = []
+                for result in results:
+                    if hasattr(result, 'document_info') and result.document_info:
+                        filename = result.document_info.get('filename', '')
+                        if filename and filename not in document_sources:
+                            document_sources.append(filename)
+                
+                # Get contextual response (improved structure with document sources)
                 contextual_response = None
                 if self.config.use_colpali:
                     try:
                         response = self.foundation.db.query(query, use_colpali=True)
                         if response and response.completion:
-                            # Structure the contextual response for better readability
+                            # Structure the contextual response for better readability with sources
                             contextual_response = self._structure_contextual_response(
-                                response.completion, query, len(results)
+                                response.completion, query, len(results), document_sources
                             )
                     except Exception as e:
                         logger.warning(f"Failed to get contextual response: {e}")
@@ -278,6 +351,7 @@ class ProductionAPIServer:
                     'total_results': len(results),
                     'visual_results': sum(1 for r in results if r.is_visual_content),
                     'text_results': sum(1 for r in results if not r.is_visual_content),
+                    'document_sources': document_sources,
                     'contextual_response': contextual_response,
                     'processing_time': processing_time,
                     'timestamp': datetime.now().isoformat()

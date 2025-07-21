@@ -25,6 +25,7 @@ export interface SearchResponse {
   results: SearchResult[];
   total: number;
   ai_response?: string; // AI contextual response
+  document_sources?: string[]; // Source documents for the AI response
   processing_time: number;
   methods_used: string[];
 }

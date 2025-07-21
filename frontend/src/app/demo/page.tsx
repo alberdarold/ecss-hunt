@@ -14,6 +14,7 @@ export default function DemoPage() {
 
   const [aiResponse, setAiResponse] = useState<string | null>(null);
   const [processingTime, setProcessingTime] = useState<number | null>(null);
+  const [documentSources, setDocumentSources] = useState<string[]>([]);
   const [systemStatus, setSystemStatus] = useState<SystemStatusResponse | null>(null);
   const [isConnected, setIsConnected] = useState(false);
   
@@ -38,6 +39,7 @@ export default function DemoPage() {
     setSearchState(prev => ({ ...prev, isLoading: true, error: null }));
     setAiResponse(null);
     setProcessingTime(null);
+    setDocumentSources([]);
 
     try {
       const filters: SearchFilters = {
@@ -48,12 +50,14 @@ export default function DemoPage() {
 
       const response = await searchAPI.search(filters);
       
-      // Only extract AI response
+      // Extract AI response and document sources
       if (response.ai_response) {
         setAiResponse(response.ai_response);
         setProcessingTime(response.processing_time || null);
+        setDocumentSources(response.document_sources || []);
       } else {
         setAiResponse("No AI response available for this query. Please try a different search term.");
+        setDocumentSources([]);
       }
       
       setSearchState(prev => ({
@@ -214,6 +218,32 @@ export default function DemoPage() {
                   style={{ lineHeight: '1.6' }}
                   dangerouslySetInnerHTML={{ __html: aiResponse }}
                 />
+                
+                {/* Document Sources */}
+                {documentSources.length > 0 && (
+                  <div className="mt-4 pt-4 border-t border-border">
+                    <div className="flex items-center gap-2 mb-2">
+                      <svg className="w-4 h-4 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                      </svg>
+                      <span className="text-sm font-medium text-foreground">Source Documents:</span>
+                    </div>
+                    <div className="space-y-1">
+                      {documentSources.slice(0, 5).map((source, index) => (
+                        <div key={index} className="text-xs text-muted-foreground flex items-center gap-2">
+                          <span className="w-1 h-1 bg-accent rounded-full"></span>
+                          {source}
+                        </div>
+                      ))}
+                      {documentSources.length > 5 && (
+                        <div className="text-xs text-muted-foreground flex items-center gap-2">
+                          <span className="w-1 h-1 bg-accent rounded-full"></span>
+                          ... and {documentSources.length - 5} more documents
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
                 
                 <div className="mt-4 pt-4 border-t border-border">
                   <p className="text-xs text-muted-foreground flex items-center gap-2">

@@ -108,6 +108,7 @@ function transformSearchResponse(rawResponse: any): SearchResponse {
     results: documentResults,
     total: rawResponse.total || documentResults.length,
     ai_response: cleanAIResponse(aiResponse),
+    document_sources: rawResponse.document_sources || [],
     processing_time: rawResponse.processing_time || 0,
     methods_used: rawResponse.methods_used || [],
   };
@@ -130,8 +131,11 @@ function extractDocumentName(title: string): string {
 function cleanAIResponse(response: string): string {
   if (!response) return '';
   
+  // Remove any remaining # symbols (safety check)
+  let cleaned = response.replace(/#/g, '');
+  
   // Convert markdown formatting to HTML with better spacing
-  let cleaned = response
+  cleaned = cleaned
     // Convert bold markdown to HTML
     .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
     // Convert bullet points to HTML lists
