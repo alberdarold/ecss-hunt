@@ -286,11 +286,11 @@ export default function DemoPage() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                   {[
                     "What are the main objectives of ECSS-E-ST-10-02C?",
-                    "Describe the verification methods required for engineering projects in ECSS.",
+                    "What are the requirements for thermal analysis in ECSS-E-ST-31C?",
                     "What are the configuration management requirements in ECSS-E standards?",
                     "List the quality assurance activities required by ECSS-E-ST-10-02C.",
-                    "How does ECSS define and handle nonconformance in engineering projects?",
-                    "What are the software engineering requirements according to ECSS-E-ST-40C?"
+                    "How does ECSS define redundancy in spacecraft design?",
+                    "Describe the environmental testing procedures for space hardware in ECSS-E-ST-10-03C"
                   ].map((example, index) => (
                     <button
                       key={index}
