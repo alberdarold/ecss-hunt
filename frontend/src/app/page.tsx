@@ -297,7 +297,8 @@ export default function LandingPage() {
       <footer className="border-t border-border py-8 px-6">
         <div className="container mx-auto max-w-6xl text-center">
           <p className="text-sm text-muted-foreground">
-            © 2024 ECSS Navigator. Powered by advanced RAG technology and Morphik Cloud platform.
+            © 2025 ECSS Navigator. Powered by advanced RAG technology and Morphik Cloud platform.<br />
+            This project acknowledges the European Space Agency (ESA) for providing the foundational information and documentation on ECSS standards.
           </p>
           <p className="text-xs text-muted-foreground mt-2">
             Built for space engineers • Production-ready system • Real-time AI responses
