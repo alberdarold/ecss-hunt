@@ -26,6 +26,8 @@ import logging
 from typing import Dict, List, Any
 from flask import Flask, request, jsonify
 from flask_cors import CORS
+from collections import OrderedDict
+import re
 
 from production.working_morphik_system import WorkingMorphikSystem, WorkingMorphikConfig
 
@@ -41,6 +43,11 @@ class ProductionWorkingAPI:
         self.port = port
         self.morphik_system = None
         self.app = self._create_flask_app()
+        
+        # Simple in-memory TTL LRU cache for search responses
+        self._cache: OrderedDict[str, Dict[str, Any]] = OrderedDict()
+        self._cache_ttl_seconds: int = int(os.getenv("WORKING_API_CACHE_TTL", "120"))  # 2 minutes default
+        self._cache_max_size: int = int(os.getenv("WORKING_API_CACHE_SIZE", "256"))   # 256 entries
         
         # Initialize working Morphik system
         self._init_working_system()
@@ -70,6 +77,11 @@ class ProductionWorkingAPI:
     def _create_flask_app(self) -> Flask:
         """Create Flask application with working endpoints."""
         app = Flask(__name__)
+        
+        # JSON performance settings
+        app.config['JSON_SORT_KEYS'] = False
+        app.config['JSONIFY_PRETTYPRINT_REGULAR'] = False
+        
         CORS(app)
         
         @app.route('/api/health', methods=['GET'])
@@ -90,6 +102,33 @@ class ProductionWorkingAPI:
                 if not query:
                     return jsonify({'error': 'Query parameter q is required'}), 400
                 
+                # Normalize and build cache key
+                norm_query = self._normalize_query(query)
+                # Fast fail for very short queries to avoid unnecessary work
+                if len(norm_query) < 3:
+                    fast_resp = {
+                        'ai_response': "Please provide at least 3 characters to search ECSS documents.",
+                        'results': [],
+                        'total': 0,
+                        'query': query,
+                        'methods_used': ['ai_context_only'],
+                        'processing_time': 0.0,
+                        'timestamp': time.time()
+                    }
+                    resp = jsonify(fast_resp)
+                    resp.headers['X-Cache'] = 'BYPASS'
+                    resp.headers['Cache-Control'] = 'public, max-age=30'
+                    return resp
+                cache_key = f"ai_only::{norm_query}"
+                
+                # Serve from cache if fresh
+                cached = self._get_cached_response(cache_key)
+                if cached is not None:
+                    resp = jsonify(cached)
+                    resp.headers['X-Cache'] = 'HIT'
+                    resp.headers['Cache-Control'] = 'public, max-age=60'
+                    return resp
+                
                 start_time = time.time()
                 
                 # Get AI contextual response only
@@ -97,7 +136,7 @@ class ProductionWorkingAPI:
                 try:
                     # Get AI response directly from Morphik
                     response = self.morphik_system.db.query(query, use_colpali=False)
-                    if response and response.completion:
+                    if response and hasattr(response, 'completion') and response.completion:
                         ai_response = response.completion
                         logger.info(f"Got AI response: {len(ai_response)} chars")
                     else:
@@ -119,8 +158,14 @@ class ProductionWorkingAPI:
                     'timestamp': time.time()
                 }
                 
+                # Store in cache (LRU with TTL)
+                self._set_cached_response(cache_key, response_data)
+                
                 logger.info(f"✅ AI search completed in {processing_time:.2f}s")
-                return jsonify(response_data)
+                resp = jsonify(response_data)
+                resp.headers['X-Cache'] = 'MISS'
+                resp.headers['Cache-Control'] = 'public, max-age=60'
+                return resp
                 
             except Exception as e:
                 logger.error(f"❌ Search failed: {e}")
@@ -193,11 +238,46 @@ class ProductionWorkingAPI:
         
         return app
     
+    def _normalize_query(self, query: str) -> str:
+        """Normalize queries for better cache hit ratio."""
+        q = query.lower()
+        q = re.sub(r"\s+", " ", q).strip()
+        return q
+    
+    def _get_cached_response(self, key: str):
+        """Return cached response if not expired; maintain LRU order."""
+        now = time.time()
+        data = self._cache.get(key)
+        if not data:
+            return None
+        if now - data['ts'] > self._cache_ttl_seconds:
+            try:
+                del self._cache[key]
+            except KeyError:
+                pass
+            return None
+        self._cache.move_to_end(key)
+        return data['value']
+    
+    def _set_cached_response(self, key: str, value: Dict[str, Any]):
+        """Insert into LRU cache; prune size and drop expired entries opportunistically."""
+        now = time.time()
+        self._cache[key] = {'value': value, 'ts': now}
+        self._cache.move_to_end(key)
+        while len(self._cache) > self._cache_max_size:
+            self._cache.popitem(last=False)
+        keys_to_delete = []
+        for k, v in list(self._cache.items())[:32]:
+            if now - v['ts'] > self._cache_ttl_seconds:
+                keys_to_delete.append(k)
+        for k in keys_to_delete:
+            self._cache.pop(k, None)
+    
     def run(self):
         """Run the production API server."""
         try:
             logger.info(f"🚀 Starting Production Working API on port {self.port}")
-            self.app.run(host='0.0.0.0', port=self.port, debug=False)
+            self.app.run(host='0.0.0.0', port=self.port, debug=False, threaded=True)
         except Exception as e:
             logger.error(f"❌ Failed to start server: {e}")
 

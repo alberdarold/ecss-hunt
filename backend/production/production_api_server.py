@@ -25,26 +25,53 @@ import os
 import json
 import time
 import logging
+import io
 import re
 from typing import Dict, List, Optional, Any
 from datetime import datetime
 from dataclasses import asdict
-from flask import Flask, request, jsonify, Response
+from flask import Flask, request, jsonify, Response, session
 from flask_cors import CORS
 from werkzeug.exceptions import HTTPException
+from functools import wraps
 import traceback
 from PIL import Image
 
 from production.ecss_foundation_system import ECSSFoundationSystem, FoundationConfig, SearchResult, IngestionResult
 from ingestion.production.ecss_batch_ingestion import ECSSBatchIngestion, BatchIngestionConfig
+from utils.onesub_client import OneSubClient, OneSubAPIError
 
-# Configure logging
+# Configure logging with Unicode support for Windows
+class UnicodeStreamHandler(logging.StreamHandler):
+    """StreamHandler that handles Unicode encoding errors gracefully on Windows."""
+    def emit(self, record):
+        try:
+            super().emit(record)
+        except UnicodeEncodeError:
+            # If encoding fails, try to replace problematic characters
+            try:
+                msg = self.format(record)
+                # Replace emoji and other problematic Unicode characters
+                msg = msg.encode('ascii', 'replace').decode('ascii')
+                stream = self.stream
+                stream.write(msg + self.terminator)
+                self.flush()
+            except Exception:
+                self.handleError(record)
+
+# Create handlers
+file_handler = logging.FileHandler('production_api.log', encoding='utf-8')
+if sys.platform == 'win32':
+    stream_handler = UnicodeStreamHandler(sys.stdout)
+else:
+    stream_handler = logging.StreamHandler(sys.stdout)
+
 logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s - %(levelname)s - %(message)s',
     handlers=[
-        logging.FileHandler('production_api.log'),
-        logging.StreamHandler()
+        file_handler,
+        stream_handler
     ]
 )
 logger = logging.getLogger(__name__)
@@ -70,26 +97,49 @@ class ProductionAPIServer:
         self.request_count = 0
         self.error_count = 0
         
+        # Initialize 1sub client
+        try:
+            self.onesub_client = OneSubClient()
+            logger.info("✅ 1sub API client initialized")
+        except Exception as e:
+            logger.error(f"❌ Failed to initialize 1sub client: {e}")
+            self.onesub_client = None
+        
         logger.info("🚀 Production ECSS API Server initialized")
     
     def _create_flask_app(self) -> Flask:
         """Create and configure Flask application."""
         app = Flask(__name__)
         
+        # Configure Flask session
+        session_secret = os.getenv("FLASK_SESSION_SECRET_KEY")
+        if not session_secret:
+            logger.warning("⚠️ FLASK_SESSION_SECRET_KEY not set. Generating temporary key.")
+            import secrets
+            session_secret = secrets.token_urlsafe(32)
+        
+        app.config['SECRET_KEY'] = session_secret
+        app.config['SESSION_COOKIE_HTTPONLY'] = True
+        app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'
+        app.config['PERMANENT_SESSION_LIFETIME'] = 86400  # 24 hours
+        
         # Configure CORS
         allowed_origins = [
             "http://localhost:3000",
+            "http://localhost:3001",
             "https://localhost:3000",
+            "https://localhost:3001",
             "http://127.0.0.1:3000",
+            "http://127.0.0.1:3001",
             "https://ecss-hunt.onrender.com",
             "https://ecss-hunt.vercel.app",
             "https://ecss-hunt-frontend.vercel.app"
         ]
         
         if self.config.debug_mode:
-            CORS(app, origins="*")
+            CORS(app, origins="*", supports_credentials=True, methods=['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'], allow_headers=['Content-Type', 'Authorization'])
         else:
-            CORS(app, origins=allowed_origins)
+            CORS(app, origins=allowed_origins, supports_credentials=True, methods=['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'], allow_headers=['Content-Type', 'Authorization'])
         
         # Register error handlers
         self._register_error_handlers(app)
@@ -210,6 +260,52 @@ class ProductionAPIServer:
             cleaned_fallback = self._clean_raw_response(raw_response)
             return cleaned_fallback[:800] + "..." if len(cleaned_fallback) > 800 else cleaned_fallback
     
+    def require_auth(self, f):
+        """
+        Decorator to require authentication for a route.
+        
+        Checks if user has valid session with user_id.
+        Returns 401 if not authenticated.
+        """
+        @wraps(f)
+        def decorated_function(*args, **kwargs):
+            if not self.onesub_client:
+                return jsonify({
+                    'error': 'Authentication service unavailable',
+                    'message': '1sub API client not initialized'
+                }), 503
+            
+            # Check if user is authenticated
+            user_id = session.get('user_id')
+            expires_at = session.get('expires_at')
+            
+            if not user_id:
+                return jsonify({
+                    'error': 'Unauthorized',
+                    'message': 'No active session. Please authenticate first.'
+                }), 401
+            
+            # Check if session is expired
+            if expires_at:
+                try:
+                    expires_datetime = datetime.fromisoformat(expires_at.replace('Z', '+00:00'))
+                    if datetime.now(expires_datetime.tzinfo) >= expires_datetime:
+                        session.clear()
+                        return jsonify({
+                            'error': 'Session expired',
+                            'message': 'Your session has expired. Please authenticate again.'
+                        }), 401
+                except Exception as e:
+                    logger.warning(f"Error checking session expiration: {e}")
+            
+            # Add user_id to request context for use in route
+            request.user_id = user_id
+            request.tool_id = session.get('tool_id')
+            
+            return f(*args, **kwargs)
+        
+        return decorated_function
+    
     def _register_error_handlers(self, app: Flask):
         """Register error handlers."""
         
@@ -244,6 +340,9 @@ class ProductionAPIServer:
             """Before request middleware."""
             self.request_count += 1
             logger.info(f"API Request: {request.method} {request.path}")
+            # Log CORS origin for debugging
+            if request.headers.get('Origin'):
+                logger.info(f"CORS Origin: {request.headers.get('Origin')}")
         
         @app.route('/api/health', methods=['GET'])
         def health_check():
@@ -256,14 +355,123 @@ class ProductionAPIServer:
                 'error_count': self.error_count
             })
         
+        @app.route('/api/auth/verify', methods=['POST'])
+        def verify_token():
+            """Verify JWT token from 1sub.io and create session."""
+            if not self.onesub_client:
+                return jsonify({
+                    'error': 'Authentication service unavailable',
+                    'message': '1sub API client not initialized'
+                }), 503
+            
+            try:
+                data = request.get_json()
+                if not data or 'token' not in data:
+                    return jsonify({
+                        'error': 'Invalid request',
+                        'message': 'Token is required'
+                    }), 400
+                
+                token = data['token']
+                
+                # Verify token with 1sub API
+                user_info = self.onesub_client.verify_user_token(token)
+                
+                # Create session
+                session.permanent = True
+                session['user_id'] = user_info['user_id']
+                session['tool_id'] = user_info.get('tool_id')
+                session['checkout_id'] = user_info.get('checkout_id')
+                session['expires_at'] = user_info.get('expires_at')
+                
+                logger.info(f"User authenticated: {user_info['user_id']}")
+                
+                return jsonify({
+                    'success': True,
+                    'user_id': user_info['user_id'],
+                    'tool_id': user_info.get('tool_id'),
+                    'expires_at': user_info.get('expires_at')
+                }), 200
+                
+            except OneSubAPIError as e:
+                logger.warning(f"Token verification failed: {e}")
+                return jsonify({
+                    'error': 'Token verification failed',
+                    'message': str(e)
+                }), 401
+            except Exception as e:
+                logger.error(f"Error verifying token: {e}")
+                return jsonify({
+                    'error': 'Internal server error',
+                    'message': 'Failed to verify token'
+                }), 500
+        
+        @app.route('/api/auth/session', methods=['GET'])
+        def get_session():
+            """Get current session information."""
+            user_id = session.get('user_id')
+            
+            if not user_id:
+                return jsonify({
+                    'authenticated': False,
+                    'message': 'No active session'
+                }), 200
+            
+            return jsonify({
+                'authenticated': True,
+                'user_id': user_id,
+                'tool_id': session.get('tool_id'),
+                'expires_at': session.get('expires_at')
+            }), 200
+        
+        @app.route('/api/auth/logout', methods=['POST'])
+        def logout():
+            """Clear current session."""
+            user_id = session.get('user_id')
+            session.clear()
+            
+            logger.info(f"User logged out: {user_id}")
+            
+            return jsonify({
+                'success': True,
+                'message': 'Logged out successfully'
+            }), 200
+        
+        @app.route('/api/config/tool-id', methods=['GET'])
+        def get_tool_id():
+            """Get tool_id from backend configuration."""
+            tool_id = os.getenv("ONESUB_TOOL_ID")
+            
+            if not tool_id:
+                return jsonify({
+                    'error': 'Tool ID not configured',
+                    'message': 'ONESUB_TOOL_ID environment variable not set'
+                }), 500
+            
+            return jsonify({
+                'tool_id': tool_id
+            }), 200
+        
         @app.route('/api/status', methods=['GET'])
         def system_status():
             """Comprehensive system status."""
             foundation_status = self.foundation.get_system_status()
             
+            # Transform to match frontend SystemStatusResponse format
             return jsonify({
+                'connection': 'connected' if foundation_status.get('morphik_connected') else 'disconnected',
+                'features': {
+                    'agent_query': False,  # Not available in production API
+                    'batch_operations': True,
+                    'colpali_visual': foundation_status.get('colpali_enabled', False),
+                    'document_access': True,  # Available in production API
+                    'knowledge_graphs': False,  # Not available
+                    'standard_query': True
+                },
+                'system': 'Production ECSS API Server',
+                'timestamp': time.time(),
+                # Include additional info for backwards compatibility
                 'status': 'online',
-                'timestamp': datetime.now().isoformat(),
                 'foundation_system': foundation_status,
                 'api_metrics': {
                     'request_count': self.request_count,
@@ -273,6 +481,7 @@ class ProductionAPIServer:
             })
         
         @app.route('/api/search', methods=['GET'])
+        @self.require_auth
         def search():
             """Enhanced search with visual content support and ECSS filtering."""
             query = request.args.get('q', '').strip()
@@ -291,6 +500,46 @@ class ProductionAPIServer:
             
             if limit > 20:
                 return jsonify({'error': 'Maximum limit is 20'}), 400
+            
+            # Consume credits before search
+            user_id = request.user_id
+            credit_amount = 0.01  # Fixed amount per search
+            idempotency_key = self.onesub_client.generate_idempotency_key(
+                user_id, "search", query
+            )
+            
+            try:
+                credit_result = self.onesub_client.consume_credits(
+                    user_id=user_id,
+                    amount=credit_amount,
+                    reason=f"Search operation: {query[:100]}",
+                    idempotency_key=idempotency_key
+                )
+                
+                # Check for insufficient credits
+                if not credit_result.get("success"):
+                    if credit_result.get("error") == "insufficient_credits":
+                        return jsonify({
+                            'error': 'insufficient_credits',
+                            'message': credit_result.get('message', 'Insufficient credits'),
+                            'current_balance': credit_result.get('current_balance', 0),
+                            'required': credit_result.get('required', credit_amount),
+                            'shortfall': credit_result.get('shortfall', 0)
+                        }), 400
+                    else:
+                        return jsonify({
+                            'error': 'Credit consumption failed',
+                            'message': credit_result.get('message', 'Failed to consume credits')
+                        }), 500
+                
+                remaining_balance = credit_result.get('new_balance', 0)
+                
+            except OneSubAPIError as e:
+                logger.error(f"Credit consumption error: {e}")
+                return jsonify({
+                    'error': 'Credit consumption failed',
+                    'message': str(e)
+                }), 500
             
             start_time = time.time()
             
@@ -404,6 +653,8 @@ class ProductionAPIServer:
                     'ai_response': contextual_response,  # Frontend expects ai_response
                     'contextual_response': contextual_response,
                     'processing_time': processing_time,
+                    'credits_remaining': remaining_balance,
+                    'credits_used': credit_amount,
                     'timestamp': datetime.now().isoformat()
                 }
                 
@@ -425,6 +676,7 @@ class ProductionAPIServer:
                 }), 500
         
         @app.route('/api/search/visual', methods=['GET'])
+        @self.require_auth
         def visual_search():
             """Search specifically for visual content."""
             query = request.args.get('q', '').strip()
@@ -432,6 +684,46 @@ class ProductionAPIServer:
             
             if not query:
                 return jsonify({'error': 'Query parameter "q" is required'}), 400
+            
+            # Consume credits before search
+            user_id = request.user_id
+            credit_amount = 0.01  # Fixed amount per search
+            idempotency_key = self.onesub_client.generate_idempotency_key(
+                user_id, "visual_search", query
+            )
+            
+            try:
+                credit_result = self.onesub_client.consume_credits(
+                    user_id=user_id,
+                    amount=credit_amount,
+                    reason=f"Visual search operation: {query[:100]}",
+                    idempotency_key=idempotency_key
+                )
+                
+                # Check for insufficient credits
+                if not credit_result.get("success"):
+                    if credit_result.get("error") == "insufficient_credits":
+                        return jsonify({
+                            'error': 'insufficient_credits',
+                            'message': credit_result.get('message', 'Insufficient credits'),
+                            'current_balance': credit_result.get('current_balance', 0),
+                            'required': credit_result.get('required', credit_amount),
+                            'shortfall': credit_result.get('shortfall', 0)
+                        }), 400
+                    else:
+                        return jsonify({
+                            'error': 'Credit consumption failed',
+                            'message': credit_result.get('message', 'Failed to consume credits')
+                        }), 500
+                
+                remaining_balance = credit_result.get('new_balance', 0)
+                
+            except OneSubAPIError as e:
+                logger.error(f"Credit consumption error: {e}")
+                return jsonify({
+                    'error': 'Credit consumption failed',
+                    'message': str(e)
+                }), 500
             
             start_time = time.time()
             
@@ -449,6 +741,8 @@ class ProductionAPIServer:
                     'visual_results': [asdict(r) for r in visual_results],
                     'total_visual_results': len(visual_results),
                     'processing_time': processing_time,
+                    'credits_remaining': remaining_balance,
+                    'credits_used': credit_amount,
                     'timestamp': datetime.now().isoformat()
                 }
                 

@@ -22,16 +22,49 @@ import {
 
 // Configuration - Always use Render backend
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'https://ecss-hunt.onrender.com';
-const API_VERSION = process.env.NEXT_PUBLIC_API_VERSION || 'working';
+const API_VERSION = process.env.NEXT_PUBLIC_API_VERSION !== undefined ? process.env.NEXT_PUBLIC_API_VERSION : 'working';
+
+// Lightweight in-memory cache and request controller for client-side perf
+const responseCache = new Map<string, { ts: number; data: any }>();
+const CACHE_TTL_MS = 60_000; // 60s
+let inflightControllers = new Map<string, AbortController>();
+
+function normalizeKey(s: string): string {
+  return s.toLowerCase().replace(/\s+/g, ' ').trim();
+}
 
 // Helper function for API calls with better error handling
 async function apiFetch<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
-  const url = `${API_BASE_URL}/api/${API_VERSION}${endpoint}`;
+  const versionPath = API_VERSION ? `${API_VERSION}/` : '';
+  const url = `${API_BASE_URL}/api/${versionPath}${endpoint.startsWith('/') ? endpoint.slice(1) : endpoint}`;
+  const cacheKey = normalizeKey(url);
+  
+  // Debug logging (remove in production)
+  if (process.env.NODE_ENV === 'development') {
+    console.log(`[API] Fetching: ${url}`, { API_BASE_URL, API_VERSION, endpoint });
+  }
+  
+  // Serve from cache if fresh
+  const cached = responseCache.get(cacheKey);
+  const now = Date.now();
+  if (cached && now - cached.ts < CACHE_TTL_MS) {
+    return cached.data as T;
+  }
+  
+  // Cancel any duplicate in-flight request
+  const existing = inflightControllers.get(cacheKey);
+  if (existing) {
+    existing.abort();
+    inflightControllers.delete(cacheKey);
+  }
   
   const defaultHeaders = {
     'Content-Type': 'application/json',
     'Accept': 'application/json',
   };
+
+  const controller = new AbortController();
+  inflightControllers.set(cacheKey, controller);
 
   const config: RequestInit = {
     ...options,
@@ -39,20 +72,79 @@ async function apiFetch<T>(endpoint: string, options: RequestInit = {}): Promise
       ...defaultHeaders,
       ...options.headers,
     },
+    signal: controller.signal,
+    credentials: 'include', // Important for session cookies
+    // Hint intermediate caches; safe for GET
+    cache: 'no-store',
   };
 
   try {
     const response = await fetch(url, config);
     
+    // Handle network errors or non-OK responses
     if (!response.ok) {
-      throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      let data;
+      try {
+        data = await response.json();
+      } catch (e) {
+        // If JSON parsing fails, create a generic error
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      }
+      
+      // Handle specific error cases
+      if (response.status === 400 && data.error === 'insufficient_credits') {
+        const error: any = new Error(data.message || 'Insufficient credits');
+        error.status = 400;
+        error.error = 'insufficient_credits';
+        error.current_balance = data.current_balance;
+        error.required = data.required;
+        error.shortfall = data.shortfall;
+        throw error;
+      } else if (response.status === 401) {
+        const error: any = new Error(data.message || 'Unauthorized');
+        error.status = 401;
+        error.error = 'unauthorized';
+        throw error;
+      } else {
+        throw new Error(data.message || `HTTP ${response.status}: ${response.statusText}`);
+      }
     }
-
-    const data = await response.json();
+    
+    // Parse JSON response
+    let data;
+    try {
+      data = await response.json();
+    } catch (e) {
+      throw new Error(`Invalid JSON response from server`);
+    }
+    
+    // Populate cache on success
+    responseCache.set(cacheKey, { ts: Date.now(), data });
     return data;
-  } catch (error) {
-    console.error(`API call failed for ${endpoint}:`, error);
+  } catch (error: any) {
+    // If aborted due to new duplicate request, surface a clean error
+    if (error?.name === 'AbortError') {
+      throw new Error('Request aborted');
+    }
+    // Re-throw if it's already our custom error
+    if (error?.error === 'insufficient_credits' || error?.error === 'unauthorized') {
+      throw error;
+    }
+    
+    // Handle network errors (connection refused, CORS, etc.)
+    if (error?.message?.includes('fetch') || error?.message?.includes('Failed to fetch') || error?.name === 'TypeError') {
+      const errorMessage = `Unable to connect to backend API at ${API_BASE_URL}. Make sure the backend server is running.`;
+      console.error(`API call failed for ${endpoint} (${url}):`, errorMessage, error);
+      const networkError: any = new Error(errorMessage);
+      networkError.isNetworkError = true;
+      networkError.originalError = error;
+      throw networkError;
+    }
+    
+    console.error(`API call failed for ${endpoint} (${url}):`, error);
     throw error;
+  } finally {
+    inflightControllers.delete(cacheKey);
   }
 }
 
@@ -66,6 +158,8 @@ function transformSearchResponse(rawResponse: any): SearchResponse {
       ai_response: '',
       processing_time: rawResponse.processing_time || 0,
       methods_used: rawResponse.methods_used || [],
+      credits_remaining: rawResponse.credits_remaining,
+      credits_used: rawResponse.credits_used,
     };
   }
 
@@ -111,6 +205,8 @@ function transformSearchResponse(rawResponse: any): SearchResponse {
     document_sources: rawResponse.document_sources || [],
     processing_time: rawResponse.processing_time || 0,
     methods_used: rawResponse.methods_used || [],
+    credits_remaining: rawResponse.credits_remaining,
+    credits_used: rawResponse.credits_used,
   };
 }
 
@@ -185,15 +281,20 @@ export const searchAPI = {
    */
   async search(filters: SearchFilters): Promise<SearchResponse> {
     const params = new URLSearchParams({
-      q: filters.query,
+      q: filters.query.trim(),
       limit: filters.limit?.toString() || '8',
     });
 
-    // Use the working backend with real document search
-    const rawResponse = await apiFetch<any>(`/search?${params}`);
-    
-    // Transform the new backend format
-    return transformSearchResponse(rawResponse);
+    try {
+      const response = await apiFetch<any>(`/search?${params}`);
+      return transformSearchResponse(response);
+    } catch (error: any) {
+      // Re-throw with error details preserved
+      if (error.error === 'insufficient_credits' || error.status === 401) {
+        throw error;
+      }
+      throw error;
+    }
   },
 
   /**
@@ -231,7 +332,7 @@ export const systemAPI = {
    * Health check
    */
   async getHealth(): Promise<{ status: string; timestamp: string }> {
-    // Use the health endpoint without /working prefix for basic health
+    // Use the health endpoint without version prefix for basic health
     const url = `${API_BASE_URL}/api/health`;
     const response = await fetch(url);
     return response.json();

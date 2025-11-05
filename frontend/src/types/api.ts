@@ -28,6 +28,8 @@ export interface SearchResponse {
   document_sources?: string[]; // Source documents for the AI response
   processing_time: number;
   methods_used: string[];
+  credits_remaining?: number; // Credits remaining after search
+  credits_used?: number; // Credits consumed for this search
 }
 
 // Visual search result from ColPali processing

@@ -35,13 +35,37 @@ from PIL import Image
 from morphik import Morphik
 from morphik.rules import NaturalLanguageRule
 
-# Configure comprehensive logging
+# Configure comprehensive logging with Unicode support for Windows
+class UnicodeStreamHandler(logging.StreamHandler):
+    """StreamHandler that handles Unicode encoding errors gracefully on Windows."""
+    def emit(self, record):
+        try:
+            super().emit(record)
+        except UnicodeEncodeError:
+            # If encoding fails, try to replace problematic characters
+            try:
+                msg = self.format(record)
+                # Replace emoji and other problematic Unicode characters
+                msg = msg.encode('ascii', 'replace').decode('ascii')
+                stream = self.stream
+                stream.write(msg + self.terminator)
+                self.flush()
+            except Exception:
+                self.handleError(record)
+
+# Create handlers
+file_handler = logging.FileHandler('ecss_foundation.log', encoding='utf-8')
+if sys.platform == 'win32':
+    stream_handler = UnicodeStreamHandler(sys.stdout)
+else:
+    stream_handler = logging.StreamHandler(sys.stdout)
+
 logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s - %(levelname)s - %(message)s',
     handlers=[
-        logging.FileHandler('ecss_foundation.log'),
-        logging.StreamHandler()
+        file_handler,
+        stream_handler
     ]
 )
 logger = logging.getLogger(__name__)
