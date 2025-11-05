@@ -32,8 +32,17 @@ export default function DemoPage() {
     if (token) {
       handleTokenVerification(token);
     } else {
-      // Check existing session
+      // Check existing session with timeout fallback
       checkExistingSession();
+      
+      // Fallback: If session check takes too long, show purchase button
+      const fallbackTimer = setTimeout(() => {
+        console.log('Session check timeout - showing purchase option');
+        setIsVerifying(false);
+        setIsAuthenticated(false);
+      }, 8000); // 8 seconds fallback
+      
+      return () => clearTimeout(fallbackTimer);
     }
     checkSystemStatus();
   }, []);
@@ -83,14 +92,24 @@ export default function DemoPage() {
     setIsVerifying(true);
     
     try {
-      const session = await getSession();
-      setIsAuthenticated(session.authenticated);
+      // Add timeout to prevent hanging
+      const timeoutPromise = new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('Session check timeout')), 5000)
+      );
+      
+      const session = await Promise.race([
+        getSession(),
+        timeoutPromise
+      ]) as any;
+      
+      setIsAuthenticated(session.authenticated || false);
       if (!session.authenticated) {
         setAuthError(null);
       }
     } catch (error) {
       console.error('Session check error:', error);
       setIsAuthenticated(false);
+      setAuthError(null); // Clear any previous errors
     } finally {
       setIsVerifying(false);
     }
