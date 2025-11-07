@@ -40,7 +40,7 @@ export default function DemoPage() {
         console.log('Session check timeout - showing purchase option');
         setIsVerifying(false);
         setIsAuthenticated(false);
-      }, 8000); // 8 seconds fallback
+      }, 3000); // 3 seconds fallback - faster UX
       
       return () => clearTimeout(fallbackTimer);
     }
@@ -179,9 +179,17 @@ export default function DemoPage() {
       if (error?.isNetworkError) {
         setSystemStatus({
           connection: 'disconnected',
-          status: 'error',
-          message: error.message || 'Unable to connect to backend server',
-        } as SystemStatusResponse);
+          features: {
+            agent_query: false,
+            batch_operations: false,
+            colpali_visual: false,
+            document_access: false,
+            knowledge_graphs: false,
+            standard_query: false,
+          },
+          system: 'Error',
+          timestamp: Date.now(),
+        });
       }
     }
   };
