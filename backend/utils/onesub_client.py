@@ -30,13 +30,13 @@ class OneSubClient:
     - Error handling and retries
     """
     
-    def __init__(self, api_key: Optional[str] = None, base_url: str = "https://1sub.io"):
+    def __init__(self, api_key: Optional[str] = None, base_url: str = "https://1sub.vercel.app"):
         """
         Initialize the 1sub API client.
         
         Args:
             api_key: 1sub API key (defaults to ONESUB_API_KEY env var)
-            base_url: Base URL for 1sub API (defaults to https://1sub.io)
+            base_url: Base URL for 1sub API (defaults to https://1sub.vercel.app)
         """
         self.api_key = api_key or os.getenv("ONESUB_API_KEY")
         self.base_url = base_url.rstrip("/")
