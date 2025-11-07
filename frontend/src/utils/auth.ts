@@ -211,7 +211,7 @@ export async function check1SubAuth(): Promise<boolean> {
   try {
     // Try to access a protected 1sub endpoint to check auth status
     // This is a lightweight check - if user has valid cookies, it will succeed
-    const response = await fetch('https://1sub-git-feature-vendor-tool-integration-vercel.vercel.app/api/user/me', {
+    const response = await fetch('https://1sub.vercel.app/api/user/me', {
       method: 'GET',
       credentials: 'include', // Include 1sub cookies
     });
@@ -229,7 +229,7 @@ export async function check1SubAuth(): Promise<boolean> {
  */
 export async function createCheckout(toolId: string): Promise<{ checkout_id: string; checkout_url: string }> {
   try {
-    const response = await fetch('https://1sub-git-feature-vendor-tool-integration-vercel.vercel.app/api/checkout/create', {
+    const response = await fetch('https://1sub.vercel.app/api/checkout/create', {
       method: 'POST',
       credentials: 'include', // Include cookies for 1sub authentication
       headers: {
@@ -241,7 +241,7 @@ export async function createCheckout(toolId: string): Promise<{ checkout_id: str
     if (response.ok) {
       const data = await response.json();
       const checkout_id = data.checkout_id;
-      const checkout_url = `https://1sub-git-feature-vendor-tool-integration-vercel.vercel.app/credit_checkout/${checkout_id}`;
+      const checkout_url = `https://1sub.vercel.app/credit_checkout/${checkout_id}`;
       return {
         checkout_id,
         checkout_url,
