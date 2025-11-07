@@ -145,14 +145,14 @@ export default function DemoPage() {
           // Handle 401 from checkout creation
           if (checkoutError.status === 401 || checkoutError.needsLogin) {
             // Not authenticated - redirect to login
-            window.location.href = 'https://1sub.vercel.app/login?redirect=/backoffice';
+            window.location.href = 'https://1sub-git-feature-vendor-tool-integration-vercel.vercel.app/login?redirect=/backoffice';
           } else {
             throw checkoutError;
           }
         }
       } else {
         // User is not authenticated - redirect to login
-        window.location.href = 'https://1sub.vercel.app/login?redirect=/backoffice';
+        window.location.href = 'https://1sub-git-feature-vendor-tool-integration-vercel.vercel.app/login?redirect=/backoffice';
       }
     } catch (error: any) {
       console.error('Purchase error:', error);
@@ -162,7 +162,7 @@ export default function DemoPage() {
         setIsVerifying(false);
       } else {
         // Fallback: redirect to login
-        window.location.href = 'https://1sub.vercel.app/login?redirect=/backoffice';
+        window.location.href = 'https://1sub-git-feature-vendor-tool-integration-vercel.vercel.app/login?redirect=/backoffice';
       }
     }
   };
@@ -258,18 +258,18 @@ export default function DemoPage() {
                 window.location.href = checkout.checkout_url;
               } catch (checkoutError: any) {
                 if (checkoutError.status === 401 || checkoutError.needsLogin) {
-                  window.location.href = 'https://1sub.vercel.app/login?redirect=/backoffice';
+                  window.location.href = 'https://1sub-git-feature-vendor-tool-integration-vercel.vercel.app/login?redirect=/backoffice';
                 } else {
                   throw checkoutError;
                 }
               }
             } else {
-              window.location.href = 'https://1sub.vercel.app/login?redirect=/backoffice';
+              window.location.href = 'https://1sub-git-feature-vendor-tool-integration-vercel.vercel.app/login?redirect=/backoffice';
             }
           } catch (checkoutError) {
             console.error('Failed to create checkout:', checkoutError);
             // Fallback: redirect to login
-            window.location.href = 'https://1sub.vercel.app/login?redirect=/backoffice';
+            window.location.href = 'https://1sub-git-feature-vendor-tool-integration-vercel.vercel.app/login?redirect=/backoffice';
           }
         }, 3000);
       } else if (error.status === 401) {
