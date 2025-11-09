@@ -120,7 +120,13 @@ class ProductionAPIServer:
         
         app.config['SECRET_KEY'] = session_secret
         app.config['SESSION_COOKIE_HTTPONLY'] = True
-        app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'
+        if self.config.debug_mode:
+            app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'
+            app.config['SESSION_COOKIE_SECURE'] = False
+        else:
+            # Enable cross-site session cookies for production HTTPS frontends
+            app.config['SESSION_COOKIE_SAMESITE'] = 'None'
+            app.config['SESSION_COOKIE_SECURE'] = True
         app.config['PERMANENT_SESSION_LIFETIME'] = 86400  # 24 hours
         
         # Configure CORS
@@ -131,6 +137,8 @@ class ProductionAPIServer:
             "https://localhost:3001",
             "http://127.0.0.1:3000",
             "http://127.0.0.1:3001",
+            "https://www.ecssnavigator.com",
+            "https://ecssnavigator.com",
             "https://ecss-hunt.onrender.com",
             "https://ecss-hunt.vercel.app",
             "https://ecss-hunt-frontend.vercel.app"
